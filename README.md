@@ -1,5 +1,7 @@
 # aitesteval — AI/ML Test, Evaluation, Compliance & Auto-Fix Toolkit
 
+**🚀 Live demo: [evalassure.onrender.com](https://evalassure.onrender.com)** · free demo instance, so it may take ~1 minute to wake up and data resets periodically.
+
 One toolkit to **test**, **evaluate**, **audit for compliance**, **troubleshoot** and **auto-fix**:
 
 | What you build | What aitesteval checks |
