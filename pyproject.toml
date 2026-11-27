@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "aitesteval"
+name = "evalassure"
 version = "1.0.0"
 description = "Test, evaluate, audit (compliance), troubleshoot and auto-fix AI/ML models, LLM apps and AI automations."
 readme = "README.md"
@@ -19,11 +19,13 @@ portal = ["fastapi>=0.110", "uvicorn[standard]>=0.29", "jinja2>=3.1", "python-mu
 dev = ["pytest>=7", "httpx>=0.27"]
 
 [project.scripts]
-aitesteval = "aitesteval.cli:main"
-aitesteval-portal = "portal.__main__:main"
+evalassure = "evalassure.cli:main"
+evalassure-portal = "portal.__main__:main"
+# Backward-compatible alias for the pre-rename command name.
+aitesteval = "evalassure.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["aitesteval*", "portal*"]
+include = ["evalassure*", "portal*"]
 
 [tool.setuptools.package-data]
 portal = ["templates/*.html", "static/*"]

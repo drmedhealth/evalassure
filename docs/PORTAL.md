@@ -1,6 +1,6 @@
 # Web portal (multi-user, bring-your-own-key)
 
-The portal puts aitesteval behind a website and REST API so a whole team, or your customers, can test AI systems without installing anything. Each user has a private workspace with their own datasets, runs, reports, API tokens and provider keys.
+The portal puts evalassure behind a website and REST API so a whole team, or your customers, can test AI systems without installing anything. Each user has a private workspace with their own datasets, runs, reports, API tokens and provider keys.
 
 ## Run it
 

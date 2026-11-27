@@ -7,7 +7,7 @@ import os
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(prog="python -m portal", description="aitesteval web portal")
+    ap = argparse.ArgumentParser(prog="python -m portal", description="evalassure web portal")
     ap.add_argument("--host", default="127.0.0.1", help="use 0.0.0.0 inside a container")
     # Hosts such as Render inject $PORT; an explicit --port still wins.
     ap.add_argument("--port", type=int, default=int(os.environ.get("PORT") or 8000),

@@ -1,4 +1,4 @@
-"""aitesteval — open toolkit to test, evaluate, audit (compliance), troubleshoot and auto-fix
+"""evalassure — open toolkit to test, evaluate, audit (compliance), troubleshoot and auto-fix
 AI/ML models, LLM applications and AI automations."""
 __version__ = "1.0.0"
 

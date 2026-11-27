@@ -1,6 +1,6 @@
 # Compliance checks
 
-> **Disclaimer**: aitesteval maps technical test evidence and model-card facts to published requirements. Its results support audits and readiness reviews. They are **not legal advice** and do not certify conformity. Applicability depends on your role (provider or deployer), jurisdiction, sector and risk classification.
+> **Disclaimer**: evalassure maps technical test evidence and model-card facts to published requirements. Its results support audits and readiness reviews. They are **not legal advice** and do not certify conformity. Applicability depends on your role (provider or deployer), jurisdiction, sector and risk classification.
 
 Enable frameworks per scenario:
 
@@ -64,11 +64,11 @@ LLM01 prompt injection, LLM02 sensitive information disclosure, LLM05 improper o
 
 ## Adding your own controls
 
-Append a `Control(...)` to a framework function in `aitesteval/compliance/frameworks.py`, or register a new framework:
+Append a `Control(...)` to a framework function in `evalassure/compliance/frameworks.py`, or register a new framework:
 
 ```python
-from aitesteval.compliance.frameworks import FRAMEWORKS, Control
-from aitesteval.core.types import ControlStatus as S
+from evalassure.compliance.frameworks import FRAMEWORKS, Control
+from evalassure.core.types import ControlStatus as S
 
 def my_policy():
     return [Control("ACME-01", "ACME AI Policy", "Model must beat baseline by 5 pts", "Policy §3.2",

@@ -1,4 +1,4 @@
-"""aitesteval portal: multi-user web app + REST API on top of the aitesteval engine (BYOK)."""
+"""evalassure portal: multi-user web app + REST API on top of the evalassure engine (BYOK)."""
 from __future__ import annotations
 
 import csv
@@ -19,7 +19,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from aitesteval import __version__ as ENGINE_VERSION
+from evalassure import __version__ as ENGINE_VERSION
 
 from . import scenarios as S
 from .config import Settings
@@ -66,7 +66,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         yield
         worker.shutdown()
 
-    app = FastAPI(title="aitesteval portal", version=ENGINE_VERSION, lifespan=lifespan,
+    app = FastAPI(title="evalassure portal", version=ENGINE_VERSION, lifespan=lifespan,
                   description="Test, evaluate, compliance-check and auto-fix AI/ML models, LLM apps and automations. "
                               "Authenticate with `Authorization: Bearer <api token>` (create one under Settings).")
     app.state.db, app.state.worker, app.state.settings = db, worker, s

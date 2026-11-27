@@ -2,8 +2,8 @@
 
 There are three ways to get help:
 
-1. **Describe the symptom**: `python -m aitesteval troubleshoot "accuracy is high but we miss fraud"` searches the built-in knowledge base (16 failure modes).
-2. **Diagnose a report**: `python -m aitesteval troubleshoot --report reports/<scenario>.json` correlates findings across evaluators into root causes (for example, *near-perfect AUC + duplicate rows → leakage*).
+1. **Describe the symptom**: `python -m evalassure troubleshoot "accuracy is high but we miss fraud"` searches the built-in knowledge base (16 failure modes).
+2. **Diagnose a report**: `python -m evalassure troubleshoot --report reports/<scenario>.json` correlates findings across evaluators into root causes (for example, *near-perfect AUC + duplicate rows → leakage*).
 3. **Read the report**: every report has a *Root-cause diagnosis* section and prioritised *Recommendations*.
 
 ## AI/ML failure modes: symptom → cause → fix
@@ -32,7 +32,7 @@ There are three ways to get help:
 | Error | Meaning / fix |
 |---|---|
 | `Invalid scenario: missing required key 'model'` | Every scenario needs `name`, `task`, `model` (+ `data` for ML, `llm.cases` for LLM, `automation.cases` for automation). Run `validate`. |
-| `unknown evaluator 'x'` | Check spelling: `python -m aitesteval list evaluators`. |
+| `unknown evaluator 'x'` | Check spelling: `python -m evalassure list evaluators`. |
 | `Cannot find 'datasets/...'` | Paths resolve relative to the scenario folder, then its parent, then the current directory. |
 | `target column 'y' not found` | `data.target` must match the CSV header exactly; the error lists available columns. |
 | `skipped: model is not retrainable` | Retraining fixes need a built-in or `python:` model with `fit`. For pickles, apply the recommendation in your own pipeline. |

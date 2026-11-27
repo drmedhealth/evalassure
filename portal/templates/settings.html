@@ -45,9 +45,9 @@
 
 <section class="card pad-lg reveal">
   <h2>{{ icon('bolt') }} Example: run a test from CI</h2>
-  <p class="muted small">Store the token as a secret named <span class="kbd">AITESTEVAL_TOKEN</span>, start a run, then gate the build on its verdict.</p>
+  <p class="muted small">Store the token as a secret named <span class="kbd">EVALASSURE_TOKEN</span>, start a run, then gate the build on its verdict.</p>
   <pre class="code">curl -s -X POST {{ request.base_url }}api/v1/runs \
-  -H "Authorization: Bearer $AITESTEVAL_TOKEN" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $EVALASSURE_TOKEN" -H "Content-Type: application/json" \
   -d '{"kind": "demo", "demo": "14_automation_invoice_v2_regression"}'
 # then poll GET /api/v1/runs/&lt;id&gt; until status is "done" and check summary.verdict</pre>
 </section>

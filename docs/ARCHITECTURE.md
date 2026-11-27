@@ -35,7 +35,7 @@ Key design choices:
 
 ### Custom evaluator
 ```python
-from aitesteval.core.registry import Evaluator, register_evaluator
+from evalassure.core.registry import Evaluator, register_evaluator
 
 @register_evaluator("latency_budget")
 class LatencyBudget(Evaluator):
@@ -55,8 +55,8 @@ Import the module before running (for example in your own runner script), then u
 
 ### Custom auto-fix
 ```python
-from aitesteval.remediation.fixes import Fix
-from aitesteval.core.registry import register_fix
+from evalassure.remediation.fixes import Fix
+from evalassure.core.registry import register_fix
 
 @register_fix("my_fix")
 class MyFix(Fix):

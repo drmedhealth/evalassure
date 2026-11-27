@@ -1,6 +1,6 @@
 """Built-in numpy ML models, model wrappers used by auto-fixes, and compression utilities.
 
-Any object with `predict(X)` (and optionally `predict_proba(X)`) works with aitesteval,
+Any object with `predict(X)` (and optionally `predict_proba(X)`) works with evalassure,
 including scikit-learn, XGBoost, LightGBM or PyTorch models wrapped in a small adapter.
 """
 from __future__ import annotations

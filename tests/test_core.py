@@ -3,13 +3,13 @@ import json
 import numpy as np
 import pytest
 
-from aitesteval.cli import main
-from aitesteval.core.registry import EVALUATORS, Evaluator, register_evaluator
-from aitesteval.evaluators import metrics as M
-from aitesteval.models.automation import InvoiceWorkflow, ToolBox, TransientError, parse_amount_robust
-from aitesteval.models.guardrails import InjectionGuard, JSONRepairGuard, PIIRedactionGuard, repair_json
-from aitesteval.models.llm import MockLLM
-from aitesteval.models.ml import LogisticRegressionNP, compress
+from evalassure.cli import main
+from evalassure.core.registry import EVALUATORS, Evaluator, register_evaluator
+from evalassure.evaluators import metrics as M
+from evalassure.models.automation import InvoiceWorkflow, ToolBox, TransientError, parse_amount_robust
+from evalassure.models.guardrails import InjectionGuard, JSONRepairGuard, PIIRedactionGuard, repair_json
+from evalassure.models.llm import MockLLM
+from evalassure.models.ml import LogisticRegressionNP, compress
 
 
 # ----------------------------------------------------------------- metrics

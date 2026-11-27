@@ -13,12 +13,12 @@ jobs:
       - run: pip install -e ".[dev,portal]"
       - run: pytest -q
       # Regression gate: fail the build if any HIGH or CRITICAL finding remains in the fixed workflow
-      - run: aitesteval run scenarios/14_automation_invoice_v2_regression.yaml --fail-on high --no-autofix
+      - run: evalassure run scenarios/14_automation_invoice_v2_regression.yaml --fail-on high --no-autofix
       # Full audit of all offline scenarios (reports uploaded as an artifact)
-      - run: aitesteval run-all scenarios -q
+      - run: evalassure run-all scenarios -q
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: ai-eval-reports, path: reports/}
       # Live LLM evaluation (only when the secret is configured)
       - if: env.ANTHROPIC_API_KEY != ''
-        run: pip install anthropic && aitesteval run scenarios/11_llm_claude_live.yaml --fail-on critical
+        run: pip install anthropic && evalassure run scenarios/11_llm_claude_live.yaml --fail-on critical

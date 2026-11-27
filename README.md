@@ -1,10 +1,12 @@
-# aitesteval — AI/ML Test, Evaluation, Compliance & Auto-Fix Toolkit
+# evalassure — AI/ML Test, Evaluation, Compliance & Auto-Fix Toolkit
 
-**🚀 Live demo: [evalassure.onrender.com](https://evalassure.onrender.com)** · free demo instance, so it may take ~1 minute to wake up and data resets periodically.
+**🚀 Live demo: [evalassure.com](https://evalassure.com)** · free demo instance, so it may take ~1 minute to wake up and data resets periodically.
+
+![evalassure portal: landing page with the 3D neural sphere](docs/images/landing.png)
 
 One toolkit to **test**, **evaluate**, **audit for compliance**, **troubleshoot** and **auto-fix**:
 
-| What you build | What aitesteval checks |
+| What you build | What evalassure checks |
 |---|---|
 | **ML models** (classification, regression) | performance, calibration, overfitting, data quality & leakage, fairness (4/5ths rule, equal opportunity), robustness, drift, explainability & proxy discrimination |
 | **LLM / GenAI apps** (chatbots, RAG, assistants) | answer quality, hallucination / grounding, safety & over-refusal, toxicity, PII leakage, prompt injection & jailbreaks, counterfactual bias, JSON validity, latency, cost, consistency |
@@ -14,6 +16,16 @@ One toolkit to **test**, **evaluate**, **audit for compliance**, **troubleshoot*
 Each run produces a **health score**, a **verdict** (`PASS` / `PASS_WITH_WARNINGS` / `NEEDS_WORK` / `BLOCK`), findings ranked by severity, a **compliance gap analysis** (EU AI Act, NIST AI RMF, GDPR, ISO/IEC 42001, OWASP Top 10 for LLM apps, US fair-lending, HIPAA), a **root-cause diagnosis**, **prioritised recommendations**, and optionally **auto-fixes**. Every fix is re-evaluated and kept only if it actually helps.
 
 It runs **offline out of the box**: synthetic datasets and simulated models with built-in flaws mean every scenario works without API keys. Swap in your own CSV, model, LLM endpoint or workflow when you're ready.
+
+## Screenshots
+
+| Dashboard | Run report |
+|---|---|
+| ![Runs dashboard with health scores and verdicts](docs/images/dashboard.png) | ![Run report with health gauge, severity breakdown, findings and auto-fixes](docs/images/run.png) |
+
+| New run (bring your own LLM key) |
+|---|
+| ![New LLM run form](docs/images/new-run.png) |
 
 **Deploy your own:** [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/drmedhealth/evalassure)
 
@@ -25,15 +37,15 @@ The one-click deploy uses Render's free plan, which has no persistent disk, so a
 
 ```bash
 pip install -e .            # needs numpy + PyYAML only (Python 3.10+)
-python -m aitesteval doctor # check the environment
+python -m evalassure doctor # check the environment
 
-python -m aitesteval run scenarios/01_credit_scoring_fairness.yaml
-python -m aitesteval run-all scenarios          # all offline scenarios
+python -m evalassure run scenarios/01_credit_scoring_fairness.yaml
+python -m evalassure run-all scenarios          # all offline scenarios
 ```
 
 Reports are written to `reports/` as JSON (for CI), Markdown (for PRs) and self-contained HTML (for stakeholders).
 
-The command is also installed as `aitesteval` (if your Python `Scripts/` folder is on `PATH`).
+The command is also installed as `evalassure` (if your Python `Scripts/` folder is on `PATH`). The old name `aitesteval` still works as an alias, e.g. `aitesteval run ...`.
 
 Sample output:
 
@@ -90,9 +102,9 @@ See **[docs/USE_CASES.md](docs/USE_CASES.md)** for each scenario's walkthrough a
 ## Test your own system
 
 ```bash
-python -m aitesteval init my_model --task classification   # or llm | automation | regression
+python -m evalassure init my_model --task classification   # or llm | automation | regression
 # edit scenarios/my_model.yaml, then
-python -m aitesteval run scenarios/my_model.yaml
+python -m evalassure run scenarios/my_model.yaml
 ```
 
 **ML model + CSV**
@@ -105,7 +117,7 @@ data:
   sensitive: [gender, age_group]      # kept out of features, used for fairness checks
   production_path: data/last_month.csv  # optional: enables drift + decay checks
 model:
-  python: my_models.py:make_model     # class or factory; aitesteval calls .fit() (set fit: false if pre-trained)
+  python: my_models.py:make_model     # class or factory; evalassure calls .fit() (set fit: false if pre-trained)
   # pickle: models/model.pkl          # or load a trained model (only pickles you trust)
   # builtin: logreg                   # or a built-in baseline
 ```
@@ -183,7 +195,7 @@ Documentation:
 ## Project layout
 
 ```
-aitesteval/
+evalassure/
   core/          types, context, plugin registry, scenario runner
   data/          synthetic generators (with controllable flaws), CSV/JSONL loaders, splitting
   models/        built-in numpy models, compression, LLM adapters (mock/Claude/HTTP/python), guardrails, automation harness

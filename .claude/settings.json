@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "ClaudeInChromeDomain(dashboard.render.com)",
+      "ClaudeInChromeDomain(evalassure.onrender.com)",
+      "ClaudeInChromeDomain(hpanel.hostinger.com)",
+      "ClaudeInChromeDomain(127.0.0.1:8765)"
+    ]
+  }
+}

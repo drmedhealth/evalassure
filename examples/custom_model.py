@@ -10,7 +10,7 @@ To test a scikit-learn model instead, point at a factory, e.g. in my_models.py:
     def make_rf(**params):
         return RandomForestClassifier(n_estimators=200, **params)
 
-and use `python: my_models.py:make_rf`. aitesteval calls .fit(X_train, y_train) for you
+and use `python: my_models.py:make_rf`. evalassure calls .fit(X_train, y_train) for you
 (set `fit: false` if your model is already trained, or use `pickle: model.pkl`).
 """
 from __future__ import annotations

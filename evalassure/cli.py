@@ -1,13 +1,13 @@
 """Command-line interface.
 
-  aitesteval run scenarios/credit_scoring_fairness.yaml --autofix
-  aitesteval run-all scenarios/ --fail-on critical
-  aitesteval list evaluators | fixes | frameworks | scenarios
-  aitesteval troubleshoot "accuracy is high but we miss most fraud"
-  aitesteval troubleshoot --report reports/fraud_detection.json
-  aitesteval init my_chatbot --task llm
-  aitesteval validate scenarios/my.yaml
-  aitesteval doctor
+  evalassure run scenarios/credit_scoring_fairness.yaml --autofix
+  evalassure run-all scenarios/ --fail-on critical
+  evalassure list evaluators | fixes | frameworks | scenarios
+  evalassure troubleshoot "accuracy is high but we miss most fraud"
+  evalassure troubleshoot --report reports/fraud_detection.json
+  evalassure init my_chatbot --task llm
+  evalassure validate scenarios/my.yaml
+  evalassure doctor
 """
 from __future__ import annotations
 
@@ -146,7 +146,7 @@ def cmd_troubleshoot(args) -> int:
     if not query:
         for e in KB:
             print(f"{e.id}  {e.title}")
-        print('\nDescribe a symptom: aitesteval troubleshoot "model is slow and expensive"')
+        print('\nDescribe a symptom: evalassure troubleshoot "model is slow and expensive"')
         return 0
     hits = search(query)
     if not hits:
@@ -227,7 +227,7 @@ def cmd_init(args) -> int:
         return 1
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(TEMPLATES[args.task].format(name=args.name), encoding="utf-8")
-    print(f"Created {path}. Edit it, then: aitesteval run {path}")
+    print(f"Created {path}. Edit it, then: evalassure run {path}")
     return 0
 
 
@@ -244,7 +244,7 @@ def cmd_validate(args) -> int:
 
 
 def cmd_doctor(_args) -> int:
-    print(f"aitesteval {__version__} | Python {platform.python_version()} | {platform.system()}")
+    print(f"evalassure {__version__} | Python {platform.python_version()} | {platform.system()}")
     for mod, why in [("numpy", "required"), ("yaml", "required (PyYAML)"), ("anthropic", "optional: Claude provider"),
                      ("sklearn", "optional: bring scikit-learn models"), ("pytest", "optional: run tests")]:
         found = importlib.util.find_spec(mod) is not None
@@ -260,7 +260,7 @@ def cmd_doctor(_args) -> int:
 def main(argv: list[str] | None = None) -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(errors="replace")
-    p = argparse.ArgumentParser(prog="aitesteval", description="Test, evaluate, audit and fix AI/ML models, LLMs and AI automations.",
+    p = argparse.ArgumentParser(prog="evalassure", description="Test, evaluate, audit and fix AI/ML models, LLMs and AI automations.",
                                 formatter_class=argparse.RawDescriptionHelpFormatter, epilog=textwrap.dedent(__doc__ or ""))
     p.add_argument("--version", action="version", version=__version__)
     sub = p.add_subparsers(dest="cmd", required=True)

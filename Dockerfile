@@ -4,7 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PORTAL_DATA_DIR=/data PORTAL_AP
 WORKDIR /app
 
 COPY pyproject.toml README.md ./
-COPY aitesteval ./aitesteval
+COPY evalassure ./evalassure
 COPY portal ./portal
 COPY scenarios ./scenarios
 COPY datasets ./datasets

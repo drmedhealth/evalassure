@@ -10,8 +10,8 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
-from aitesteval.core.runner import Runner
-from aitesteval.reporting import to_html, to_json, to_markdown
+from evalassure.core.runner import Runner
+from evalassure.reporting import to_html, to_json, to_markdown
 
 from .config import Settings
 from .db import DB, loads

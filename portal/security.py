@@ -54,6 +54,8 @@ class KeyVault:
     """
 
     def __init__(self, secret_key: str) -> None:
+        # The salt keeps the pre-rename project name on purpose: changing it would make every
+        # provider key already stored in existing portal databases undecryptable.
         raw = HKDF(algorithm=hashes.SHA256(), length=32, salt=b"aitesteval-portal",
                    info=b"byok-provider-keys").derive(secret_key.encode())
         self._f = Fernet(base64.urlsafe_b64encode(raw))

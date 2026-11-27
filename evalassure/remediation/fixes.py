@@ -50,7 +50,7 @@ def _drop_features(ctx: EvalContext, names: list[str]) -> EvalContext:
 
 
 def _require_retrain(ctx: EvalContext) -> str | None:
-    return None if ctx.retrainable else "model is not retrainable from aitesteval (bring-your-own); apply the recommendation in your training pipeline"
+    return None if ctx.retrainable else "model is not retrainable from evalassure (bring-your-own); apply the recommendation in your training pipeline"
 
 
 # ============================================================== ML fixes

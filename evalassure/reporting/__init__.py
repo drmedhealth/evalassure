@@ -58,7 +58,7 @@ CICON = {"pass": "✅", "fail": "❌", "warn": "⚠️", "manual_review": "📝"
 
 def to_markdown(report: Report) -> str:
     s = report.summary()
-    L = [f"# AI Test & Evaluation Report — {report.scenario}", "",
+    L = [f"# evalassure · AI Test & Evaluation Report — {report.scenario}", "",
          f"*Use case:* {report.use_case}  ", f"*Task:* `{report.task}` · *Model:* `{report.metadata.get('model')}` · "
          f"*Run:* {report.timestamp}", "",
          "## Summary", "", "| Verdict | Health score | Compliance score | Critical | High | Medium | Low |",
@@ -115,7 +115,7 @@ def to_html(report: Report) -> str:
     s = report.summary()
     color = {"PASS": "#1a7f37", "PASS_WITH_WARNINGS": "#9a6700", "NEEDS_WORK": "#bc4c00", "BLOCK": "#cf222e"}[s["verdict"]]
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{html.escape(report.scenario)} — AI evaluation report</title>
+<title>{html.escape(report.scenario)} — evalassure AI evaluation report</title>
 <style>
 :root{{color-scheme:light dark;--fg:#1f2328;--bg:#fff;--muted:#59636e;--line:#d1d9e0;--card:#f6f8fa}}
 @media (prefers-color-scheme:dark){{:root{{--fg:#e6edf3;--bg:#0d1117;--muted:#9198a1;--line:#3d444d;--card:#151b23}}}}

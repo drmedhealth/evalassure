@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from aitesteval import run_scenario
-from aitesteval.reporting import to_html, to_json, to_markdown
+from evalassure import run_scenario
+from evalassure.reporting import to_html, to_json, to_markdown
 
 ROOT = Path(__file__).resolve().parents[1]
 S = ROOT / "scenarios"

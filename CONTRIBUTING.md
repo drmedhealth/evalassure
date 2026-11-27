@@ -22,7 +22,7 @@ Run the portal locally with `python -m portal --port 8765`.
 - New red-team cases must be generic test prompts; do not add real exploits
   against third-party systems or content that is harmful in itself.
 - Never commit API keys, real personal data, or anything under `portal_data/`.
-  Use synthetic data (see `aitesteval/data/synthetic.py`).
+  Use synthetic data (see `evalassure/data/synthetic.py`).
 
 ## Where things live
 

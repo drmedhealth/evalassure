@@ -7,7 +7,7 @@ Response (JSON), either or both of:
     {"predictions": [0, 1, ...]}
     {"probabilities": [[0.8, 0.2], ...]}               # columns in sorted class order
 
-Features are the numeric matrix aitesteval builds from your CSV (categorical columns
+Features are the numeric matrix evalassure builds from your CSV (categorical columns
 one-hot encoded as `column=value`). The model is treated as pre-trained: retraining
 fixes are skipped, and post-processing fixes (threshold, calibration, fairness) wrap it.
 """

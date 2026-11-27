@@ -2,7 +2,7 @@
 
 Each scenario is a YAML file in `scenarios/` that describes **what system is tested, on which data, with which checks, against which regulations, and whether to auto-fix**. They're realistic on purpose: each one plants a known problem so you can see how it is detected, diagnosed and fixed. Then copy one and point it at your own system.
 
-Run any of them with `python -m aitesteval run scenarios/<file>.yaml`.
+Run any of them with `python -m evalassure run scenarios/<file>.yaml`.
 
 ---
 
@@ -99,7 +99,7 @@ Run any of them with `python -m aitesteval run scenarios/<file>.yaml`.
 | Pays a 48,000 invoice without approval | `EXCESSIVE_AGENCY`, `HUMAN_OVERSIGHT_BYPASS`, EU AI Act Art. 14 fail, OWASP LLM06 fail | No. Policy must be enforced in code |
 
 ### 14 · v2 regression gate
-- The corrected workflow passes (`PASS`, 100/100). In CI: `aitesteval run scenarios/14_*.yaml --fail-on high --no-autofix`.
+- The corrected workflow passes (`PASS`, 100/100). In CI: `evalassure run scenarios/14_*.yaml --fail-on high --no-autofix`.
 
 ---
 

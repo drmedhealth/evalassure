@@ -1,4 +1,4 @@
-# Render Blueprint: one-click public demo of the aitesteval portal.
+# Render Blueprint: one-click public demo of the evalassure portal.
 # Spec: https://render.com/docs/blueprint-spec
 #
 # The free plan has no persistent disk and sleeps when idle, so users, datasets, runs and saved

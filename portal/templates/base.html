@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#05070d">
 {% if refresh %}<meta http-equiv="refresh" content="4">{% endif %}
-<title>{% block title %}aitesteval{% endblock %} · aitesteval</title>
+<title>{% block title %}evalassure{% endblock %} · evalassure</title>
 <link rel="stylesheet" href="/static/app.css">
 <link rel="stylesheet" href="/static/pages.css">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238b5cf6'/%3E%3Cstop offset='.55' stop-color='%236366f1'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Cpath d='M10 16.5l4 4 8-9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -19,7 +19,7 @@
 <div class="aurora" aria-hidden="true"></div>
 
 <header class="topbar">
-  <a class="brand" href="/" aria-label="aitesteval home">{{ ui.logo() }}<span class="brand-name">ai<span class="dim">test</span>eval</span></a>
+  <a class="brand" href="/" aria-label="evalassure home">{{ ui.logo() }}<span class="brand-name">eval<span class="dim">assure</span></span></a>
   {% if user %}
   <nav class="nav" aria-label="Main">
     <a href="/runs" class="{{ 'on' if path.startswith('/runs') and path != '/runs/new' }}"{% if path.startswith('/runs') and path != '/runs/new' %} aria-current="page"{% endif %}>{{ ui.icon('runs') }}Runs</a>
@@ -50,7 +50,7 @@
 
 <footer class="foot">
   <div class="foot-inner">
-    <a class="brand" href="/">{{ ui.logo('lm-g2') }}<span class="brand-name">ai<span class="dim">test</span>eval</span></a>
+    <a class="brand" href="/" aria-label="evalassure home">{{ ui.logo('lm-g2') }}<span class="brand-name">eval<span class="dim">assure</span></span></a>
     <p class="foot-note">Results are technical evidence, not legal advice. Runs that call LLM providers use your own API key and are billed by that provider.</p>
     <nav class="foot-links" aria-label="Footer">
       <a href="/docs">API docs</a>

@@ -1,4 +1,4 @@
-/* aitesteval portal — "Neural Aurora" design system.
+/* evalassure portal — "Neural Aurora" design system.
    Order: tokens → base → layout → shell → components → utilities → motion → media queries.
    CSP: style-src 'self' — no inline styles anywhere; JS may only set CSS variables / CSSOM. */
 
@@ -909,7 +909,7 @@ html.leaving main, html.leaving .foot { opacity: 0; filter: blur(4px); translate
 }
 
 @media (max-width: 380px) {
-  .brand-name .dim { display: none; }
+  .brand-name { font-size: .9em; } /* keep the full wordmark; hiding a part would read as "eval" */
   .stats { grid-template-columns: minmax(0, 1fr); }
   .btn.lg { padding: 12px 18px; }
 }

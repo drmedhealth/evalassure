@@ -11,7 +11,7 @@ bug bounty and no guaranteed response time.
 
 ## Scope
 
-In scope: the `aitesteval` engine and the `portal` web app in this repository,
+In scope: the `evalassure` engine and the `portal` web app in this repository,
 for example authentication or CSRF bypass, cross-user data access, leaking
 stored provider keys, SSRF past `check_outbound_url`, or code execution from
 portal input.

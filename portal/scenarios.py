@@ -1,4 +1,4 @@
-"""Turn a portal run request into an aitesteval scenario.
+"""Turn a portal run request into an evalassure scenario.
 
 Users never submit raw YAML: only the allow-listed fields below are accepted, so the engine's
 `python:` / `pickle:` loaders (which execute code) are unreachable from the portal. Secrets are

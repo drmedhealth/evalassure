@@ -1,4 +1,4 @@
-"""Use aitesteval from Python (notebooks, pipelines, your own services).
+"""Use evalassure from Python (notebooks, pipelines, your own services).
 
 Run:  python examples/quickstart_python_api.py
 """
@@ -7,11 +7,11 @@ from pathlib import Path
 
 import numpy as np
 
-from aitesteval import run_scenario
-from aitesteval.core.registry import Evaluator, register_evaluator
-from aitesteval.core.runner import Runner
-from aitesteval.models.llm import LLMResponse
-from aitesteval.reporting import to_markdown, write_reports
+from evalassure import run_scenario
+from evalassure.core.registry import Evaluator, register_evaluator
+from evalassure.core.runner import Runner
+from evalassure.models.llm import LLMResponse
+from evalassure.reporting import to_markdown, write_reports
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.stdout.reconfigure(errors="replace")  # Windows consoles: tolerate emoji in reports
