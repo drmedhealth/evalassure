@@ -1,0 +1,27 @@
+# USE CASE: Ship a smaller model to edge devices / cut serving cost.
+# SCENARIO: Compare int8 / int4 / int2 quantisation and 50% / 90% magnitude pruning against the
+#           full-precision model under a quality budget (overall AND per-group accuracy).
+# GOAL: Size vs accuracy trade-off, Pareto frontier, a recommended variant, and an automatic
+#       search for the most compressed setting that stays within budget.
+name: Model compression analysis
+use_case: Edge deployment / serving-cost reduction
+task: classification
+data:
+  generator: medical_triage
+  params: {n: 6000}
+  split: {test_size: 0.3, val_size: 0.1, seed: 4}
+model:
+  builtin: logreg
+evaluators:
+  - name: classification
+    thresholds: {ece_max: null}
+  - name: compression
+    budget: {max_accuracy_drop: 0.005, max_group_accuracy_drop: 0.015, min_agreement: 0.98}
+    methods:
+      - {method: quantize, bits: 8}
+      - {method: quantize, bits: 4}
+      - {method: quantize, bits: 2}
+      - {method: prune, sparsity: 0.5}
+      - {method: prune, sparsity: 0.9}
+autofix: true
+fix_exclude: [calibration, threshold_tuning, class_reweighting]

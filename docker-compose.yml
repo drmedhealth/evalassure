@@ -1,0 +1,10 @@
+services:
+  portal:
+    build: .
+    ports: ["8000:8000"]
+    volumes: ["portal-data:/data"]
+    env_file: [.env]          # copy .env.example to .env and set PORTAL_SECRET_KEY
+    restart: unless-stopped
+
+volumes:
+  portal-data:

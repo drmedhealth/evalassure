@@ -1,0 +1,43 @@
+# USE CASE: A bank uses an ML model to approve personal loans (EU AI Act Annex III high-risk).
+# SCENARIO: Historical lending data carries gender bias and a proxy feature ("part_time").
+# GOAL: Detect disparate impact + proxy discrimination, check EU AI Act / GDPR / fair-lending controls,
+#       auto-mitigate and verify the fix.
+name: Credit scoring fairness audit
+use_case: Personal-loan approval (high-risk credit decision)
+description: >
+  Audits a loan-approval classifier for performance, bias (4/5ths rule, equal opportunity),
+  proxy discrimination, robustness and regulatory readiness.
+task: classification
+data:
+  generator: credit
+  params: {n: 6000, bias: 0.8}
+  split: {test_size: 0.25, val_size: 0.2, seed: 42}
+model:
+  builtin: logreg
+evaluators:
+  - data_quality
+  - name: classification
+    thresholds: {accuracy: 0.7, f1: 0.65}
+  - name: fairness
+    sensitive: [gender, age_group]
+  - robustness
+  - explainability
+compliance: [eu_ai_act, nist_ai_rmf, gdpr, iso_42001, sector]
+autofix: true
+fixes:
+  fairness_mitigation: {mode: demographic_parity}
+model_card:
+  owner: credit-risk-ml@bank.example
+  version: 2.3.0
+  domain: credit
+  use_case_type: creditworthiness_assessment
+  risk_level: high
+  intended_use: Rank personal-loan applications for analyst review in the EU retail market.
+  limitations: Not validated for business loans or applicants with < 6 months of credit history.
+  training_data: 2019-2024 internal loan book (synthetic in this demo).
+  risk_assessment: docs/risk/credit-model-risk-assessment.md
+  human_oversight: Credit analyst reviews every automated rejection and can override.
+  logging_enabled: true
+  monitoring_plan: Monthly PSI + fairness dashboard; retrain if PSI > 0.25.
+  dpia_completed: true
+  affects_individuals: true

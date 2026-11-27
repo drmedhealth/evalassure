@@ -1,0 +1,27 @@
+# USE CASE: Model-validation gate before promotion (model risk management).
+# SCENARIO: The dataset contains a post-outcome feature (target leakage), 8% duplicated rows
+#           (train/test contamination) and missing values. Offline metrics look "too good to be true".
+# GOAL: Detect leakage/contamination, clean the data, retrain and show realistic performance.
+name: Data leakage detection
+use_case: Pre-production model validation
+task: classification
+data:
+  generator: credit
+  params: {n: 5000, bias: 0.0}
+  inject: {missing_rate: 0.03, duplicate_rate: 0.08, leakage: true, seed: 2}
+  split: {test_size: 0.25, val_size: 0.2, seed: 11}
+model:
+  builtin: logreg
+evaluators: [data_quality, classification, robustness, explainability]
+compliance: [eu_ai_act, nist_ai_rmf]
+autofix: true
+model_card:
+  owner: mrm@bank.example
+  version: 1.0.0-rc1
+  risk_level: high
+  intended_use: Loan approval scoring.
+  limitations: See validation report.
+  training_data: Loan book extract v7.
+  human_oversight: Analyst review of all declines.
+  logging_enabled: true
+  risk_assessment: Pending validation sign-off.

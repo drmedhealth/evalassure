@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<header class="page-head reveal">
+  <div>
+    <p class="eyebrow">Account</p>
+    <h1><span class="grad-text">Settings</span></h1>
+    <p class="sub">Signed in as {{ user.email }}. Manage API access for CI pipelines and your account.</p>
+  </div>
+  <a class="btn ghost" href="/docs">{{ icon('code') }} API docs</a>
+</header>
+
+<section class="card pad-lg reveal">
+  <h2>{{ icon('key') }} API tokens</h2>
+  <p class="muted">Use the REST API from CI pipelines or scripts. Send <code>Authorization: Bearer &lt;token&gt;</code>. Interactive docs are at <a href="/docs">/docs</a>.</p>
+  {% if new_token %}
+  <div class="token-reveal" role="status">
+    <span class="tr-icon" aria-hidden="true">{{ icon('sparkles') }}</span>
+    <div>
+      <strong>Copy your new token now; it won't be shown again:</strong>
+      <code class="token">{{ new_token }}</code>
+    </div>
+  </div>
+  {% endif %}
+  <form method="post" action="/settings/tokens" class="row gap token-form">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <input name="label" placeholder="Label, e.g. github-actions" maxlength="80" aria-label="Token label">
+    <button class="btn magnetic">{{ icon('plus') }} Create token</button>
+  </form>
+  {% if tokens %}
+  <div class="tbl-scroll">
+  <table class="tbl">
+    <thead><tr><th>Label</th><th>Token</th><th>Created</th><th>Last used</th><th></th></tr></thead>
+    <tbody>{% for t in tokens %}
+      <tr><td><strong>{{ t.label }}</strong></td><td><code>{{ t.prefix }}…</code></td><td class="small muted nowrap">{{ t.created_at|ts }}</td><td class="small muted nowrap">{{ t.last_used_at|ts or 'never' }}</td>
+        <td class="r"><form method="post" action="/settings/tokens/{{ t.id }}/delete"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn danger small" aria-label="Revoke token {{ t.label }}">{{ icon('x') }} Revoke</button></form></td></tr>{% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="muted small">No tokens yet.</p>
+  {% endif %}
+</section>
+
+<section class="card pad-lg reveal">
+  <h2>{{ icon('bolt') }} Example: run a test from CI</h2>
+  <p class="muted small">Store the token as a secret named <span class="kbd">AITESTEVAL_TOKEN</span>, start a run, then gate the build on its verdict.</p>
+  <pre class="code">curl -s -X POST {{ request.base_url }}api/v1/runs \
+  -H "Authorization: Bearer $AITESTEVAL_TOKEN" -H "Content-Type: application/json" \
+  -d '{"kind": "demo", "demo": "14_automation_invoice_v2_regression"}'
+# then poll GET /api/v1/runs/&lt;id&gt; until status is "done" and check summary.verdict</pre>
+</section>
+
+<section class="card pad-lg danger-zone reveal">
+  <h2>{{ icon('alert') }} Delete account</h2>
+  <p>Permanently deletes your account, runs, reports, datasets, API tokens and saved provider keys. This cannot be undone.</p>
+  <form method="post" action="/settings/delete-account" class="row gap" data-confirm="Permanently delete your account and all data?">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <input name="confirm" placeholder="Type {{ user.email }} to confirm" aria-label="Confirm email">
+    <button class="btn danger">{{ icon('trash') }} Delete account</button>
+  </form>
+</section>
+{% endblock %}

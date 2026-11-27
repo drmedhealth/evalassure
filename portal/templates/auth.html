@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ 'Create account' if mode == 'signup' else 'Sign in' }}{% endblock %}
+{% block content %}
+<div class="auth">
+  <div class="card glow auth-card reveal">
+    <div class="auth-head">
+      {{ m.logo('lm-auth') }}
+      <h1>{{ 'Create your account' if mode == 'signup' else 'Sign in' }}</h1>
+      <p>{{ 'Start testing your AI systems in minutes.' if mode == 'signup' else 'Welcome back. Pick up where your runs left off.' }}</p>
+    </div>
+    <form method="post" action="/{{ mode }}" class="stack">
+      {% if mode == 'signup' %}
+      <label>Name <input name="name" value="{{ name or '' }}" autocomplete="name" maxlength="80" placeholder="Ada Lovelace"></label>
+      {% endif %}
+      <label>Email <input name="email" type="email" required value="{{ email or '' }}" autocomplete="email" placeholder="you@company.com"></label>
+      <label>Password
+        <input name="password" type="password" required minlength="{{ 10 if mode == 'signup' else 1 }}"
+               autocomplete="{{ 'new-password' if mode == 'signup' else 'current-password' }}">
+        {% if mode == 'signup' %}<span class="hint">At least 10 characters.</span>{% endif %}
+      </label>
+      <button class="btn lg block magnetic">{{ 'Create account' if mode == 'signup' else 'Sign in' }} {{ m.icon('arrow-right') }}</button>
+    </form>
+    {% if mode == 'signup' or settings.allow_signup %}
+    <p class="auth-alt">
+      {% if mode == 'signup' %}Already have an account? <a href="/login">Sign in</a>
+      {% else %}New here? <a href="/signup">Create an account</a>{% endif %}
+    </p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

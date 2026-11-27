@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Test, evaluate and fix AI systems{% endblock %}
+{% block content %}
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-copy">
+    <span class="pill reveal"><span class="pulse-dot" aria-hidden="true"></span>ML models · LLM apps · AI automations</span>
+    <h1 id="hero-title" class="reveal">Test, evaluate, compliance-check and <span class="grad-text">fix your AI systems</span></h1>
+    <p class="lead reveal">Upload a dataset or connect a model, an LLM provider or a deployed endpoint. Get a verdict, a health score,
+      a compliance gap analysis and prioritised fixes, each verified by re-running the full test suite.</p>
+    <div class="hero-cta reveal">
+      {% if settings.allow_signup %}<a class="btn lg magnetic" href="/signup">Create a free account {{ m.icon('arrow-right') }}</a>{% endif %}
+      <a class="btn lg ghost magnetic" href="/login">Sign in</a>
+    </div>
+    <ul class="hero-points reveal">
+      <li>{{ m.icon('check') }}{{ demos|length }} demo scenarios, no key needed</li>
+      <li>{{ m.icon('check') }}Bring your own LLM key</li>
+      <li>{{ m.icon('check') }}REST API for CI</li>
+    </ul>
+  </div>
+
+  <div class="hero-stage" role="group" aria-label="Example results">
+    <div class="chip chip-1 float">
+      {{ m.gauge(95, label='Health', size='sm', uid='hero') }}
+      <span><strong>Health 0 → 95</strong>RAG support bot demo, after auto-fix</span>
+    </div>
+    <div class="chip chip-2 float">
+      <span class="chip-icon good">{{ m.icon('shield') }}</span>
+      <span><strong>PROMPT_INJECTION</strong>injection_guard applied · accepted</span>
+    </div>
+    <div class="chip chip-3 float">
+      <span class="chip-icon cyan">{{ m.icon('check') }}</span>
+      <span><strong>EU AI Act · Art. 10</strong>data governance control</span>
+    </div>
+    <div class="chip chip-4 float">
+      <span class="chip-icon bad">{{ m.icon('alert') }}</span>
+      <span><strong>Disparate impact</strong>four-fifths rule check</span>
+    </div>
+  </div>
+</section>
+
+<section class="marquee" aria-label="Frameworks covered">
+  <div class="marquee-track">
+    {% set frameworks = ['EU AI Act', 'NIST AI RMF', 'GDPR', 'ISO/IEC 42001', 'OWASP Top 10 for LLM apps', 'US fair lending', 'HIPAA'] %}
+    {% for dup in (false, true) %}{% for f in frameworks %}<span{% if dup %} aria-hidden="true"{% endif %}>{{ m.icon('shield') }}{{ f }}</span>{% endfor %}{% endfor %}
+  </div>
+</section>
+
+<section class="landing-section" aria-labelledby="what-title">
+  <div class="section-head reveal">
+    <p class="eyebrow">What it checks</p>
+    <h2 id="what-title">One toolkit for every kind of <span class="grad-text">AI system</span></h2>
+    <p>Each run produces a health score, a verdict (PASS, PASS WITH WARNINGS, NEEDS WORK or BLOCK), findings ranked by severity and a root-cause diagnosis.</p>
+  </div>
+  <div class="grid3 features">
+    <article class="card tilt reveal feature">
+      <span class="feature-icon">{{ m.icon('cpu') }}</span>
+      <h3>ML models</h3>
+      <p>Performance beyond accuracy, calibration, overfitting, data leakage, drift, fairness (four-fifths rule, equal opportunity), robustness and proxy features.</p>
+    </article>
+    <article class="card tilt reveal feature">
+      <span class="feature-icon">{{ m.icon('sparkles') }}</span>
+      <h3>LLM apps</h3>
+      <p>Hallucination and grounding, safety and over-refusal, PII leaks, prompt injection and jailbreaks, counterfactual bias, JSON validity, latency and cost.</p>
+    </article>
+    <article class="card tilt reveal feature">
+      <span class="feature-icon">{{ m.icon('workflow') }}</span>
+      <h3>Automations and agents</h3>
+      <p>Task success, tool-call order, excessive agency, human-oversight bypass, fault tolerance and idempotency for tool-calling workflows.</p>
+    </article>
+    <article class="card tilt reveal feature">
+      <span class="feature-icon">{{ m.icon('shield') }}</span>
+      <h3>Compliance</h3>
+      <p>Control-by-control gap analysis for the EU AI Act, NIST AI RMF, GDPR, ISO/IEC 42001, the OWASP Top 10 for LLM apps and sector rules.</p>
+    </article>
+    <article class="card tilt reveal feature">
+      <span class="feature-icon">{{ m.icon('bolt') }}</span>
+      <h3>Auto-fix, verified</h3>
+      <p>Prioritised fixes are applied and the full suite is re-run. A fix is kept only if it actually improves the result.</p>
+    </article>
+    <article class="card tilt reveal feature">
+      <span class="feature-icon">{{ m.icon('key') }}</span>
+      <h3>Bring your own key</h3>
+      <p>Live LLM tests run on your Anthropic or OpenAI-compatible account. Deployed ML models can be tested through their HTTP endpoint.</p>
+    </article>
+  </div>
+</section>
+
+<section class="landing-section" aria-labelledby="how-title">
+  <div class="section-head center reveal">
+    <p class="eyebrow">How it works</p>
+    <h2 id="how-title">From upload to <span class="grad-text">verified fix</span> in four steps</h2>
+  </div>
+  <ol class="steps">
+    <li class="step reveal"><span class="step-num" aria-hidden="true"></span><h3>Connect</h3><p>Upload a CSV or JSONL dataset, pick a demo, or point at an LLM provider or a deployed endpoint.</p></li>
+    <li class="step reveal"><span class="step-num" aria-hidden="true"></span><h3>Run the suite</h3><p>Performance, fairness, robustness, safety and security tests run in the background.</p></li>
+    <li class="step reveal"><span class="step-num" aria-hidden="true"></span><h3>Read the verdict</h3><p>Health score, findings by severity, compliance gaps and a root-cause diagnosis in one report.</p></li>
+    <li class="step reveal"><span class="step-num" aria-hidden="true"></span><h3>Fix and verify</h3><p>Apply auto-fixes, re-evaluate, and compare runs side by side before you ship.</p></li>
+  </ol>
+</section>
+
+<section class="landing-section" aria-labelledby="byok-title">
+  <div class="card glow pad-lg reveal">
+    <div class="split">
+      <div>
+        <p class="eyebrow">{{ m.icon('lock') }} Security</p>
+        <h2 id="byok-title">Your key, your bill, <span class="grad-text">your data</span></h2>
+        <p class="muted">Live LLM tests run on <strong>your</strong> provider account (Anthropic or any OpenAI-compatible endpoint).</p>
+        <ul class="checklist">
+          <li>{{ m.icon('check') }}<span><strong>Encrypted at rest</strong> and never shown again after saving.</span></li>
+          <li>{{ m.icon('check') }}<span><strong>Used only while your run executes</strong>, and redacted from logs and reports.</span></li>
+          <li>{{ m.icon('check') }}<span><strong>Delete keys at any time</strong>, or delete your account and all its data.</span></li>
+          <li>{{ m.icon('check') }}<span><strong>Try instantly</strong>: {{ demos|length }} ready-made scenarios run without any key.</span></li>
+        </ul>
+      </div>
+      <pre class="log" aria-label="Sample output">=== LLM RAG support bot (llm) ===
+Verdict: BLOCK | Health: 0/100 | Compliance: 28.1
+After auto-fix -> Health: 95/100 | Compliance: 96.9
+  [CRIT] HALLUCINATION: 62% of grounded answers ...
+  [CRIT] PII_LEAKAGE: 1 response(s) contain PII ...
+  [CRIT] PROMPT_INJECTION: 100% of 4 attacks succeeded
+  fix injection_guard        APPLIED  accepted
+  fix pii_redaction          APPLIED  accepted
+  fix grounding_guard        APPLIED  accepted</pre>
+    </div>
+  </div>
+</section>
+
+<section class="landing-section">
+  <div class="card glow cta reveal">
+    <h2>Ship AI you can <span class="grad-text">stand behind</span></h2>
+    <p>Start with a ready-made demo scenario, then point the same suite at your own model, dataset or LLM app.</p>
+    <div class="hero-cta">
+      {% if settings.allow_signup %}<a class="btn lg magnetic" href="/signup">Create a free account {{ m.icon('arrow-right') }}</a>{% endif %}
+      <a class="btn lg ghost magnetic" href="/login">Sign in</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

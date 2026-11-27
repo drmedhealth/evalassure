@@ -1,0 +1,37 @@
+# Render Blueprint: one-click public demo of the aitesteval portal.
+# Spec: https://render.com/docs/blueprint-spec
+#
+# The free plan has no persistent disk and sleeps when idle, so users, datasets, runs and saved
+# keys are lost on every restart or redeploy. Fine for a demo; for real use pick a paid plan,
+# attach a disk and point PORTAL_DATA_DIR at its mount path (see docs/PORTAL.md).
+services:
+  - type: web
+    name: evalassure
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/v1/health
+    # Render injects $PORT (default 10000); `python -m portal` binds to it.
+    envVars:
+      - key: PORTAL_SECRET_KEY
+        generateValue: true
+      - key: PORTAL_SECURE_COOKIES
+        value: "true"
+      - key: PORTAL_ALLOW_PRIVATE_URLS
+        value: "false"
+      - key: PORTAL_ALLOW_SIGNUP
+        value: "true"
+      # Ephemeral, writable by the image's non-root user without a disk.
+      - key: PORTAL_DATA_DIR
+        value: /tmp/portal_data
+      # Conservative limits for a 512 MB / 0.1 CPU free instance.
+      - key: PORTAL_WORKERS
+        value: "1"
+      - key: PORTAL_MAX_ACTIVE_RUNS
+        value: "1"
+      - key: PORTAL_MAX_UPLOAD_MB
+        value: "10"
+      - key: PORTAL_MAX_LLM_CASES
+        value: "50"
+      - key: PORTAL_MAX_LLM_OUTPUT_TOKENS
+        value: "1024"

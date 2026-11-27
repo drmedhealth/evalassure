@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% from "_macros.html" import verdict, status, sev, gauge, icon %}
+{% block title %}{{ run.name }}{% endblock %}
+{% block content %}
+{% set s = run.summary %}
+{% set fixed = s.post_fix_health_score is defined %}
+<nav class="crumbs" aria-label="Breadcrumb"><a href="/runs">Runs</a><span>{{ run.kind }}{% if scenario.task %} · {{ scenario.task }}{% endif %}</span></nav>
+<header class="page-head reveal">
+  <div>
+    <p class="eyebrow">{{ {'demo': 'Demo scenario', 'ml': 'ML model', 'llm': 'LLM app'}.get(run.kind, run.kind) }}</p>
+    <h1>{{ run.name }}</h1>
+    <p class="sub">{{ status(run.status) }} <span class="muted small">Started {{ run.created_at|ts }}{% if run|dur %} · took {{ run|dur }}{% endif %}</span></p>
+  </div>
+  <div class="row gap head-actions">
+    {% if run.status == 'done' %}
+    <a class="btn ghost small" href="/runs/{{ run.id }}/report.html?download=1">{{ icon('download') }} HTML</a>
+    <a class="btn ghost small" href="/runs/{{ run.id }}/report.md">{{ icon('download') }} Markdown</a>
+    <a class="btn ghost small" href="/runs/{{ run.id }}/report.json">{{ icon('code') }} JSON</a>
+    {% endif %}
+    {% if run.status != 'running' %}
+    <form method="post" action="/runs/{{ run.id }}/delete" data-confirm="Delete this run and its reports?">
+      <input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn danger small">{{ icon('trash') }} Delete</button>
+    </form>
+    {% endif %}
+  </div>
+</header>
+
+{% if run.status in ('queued', 'running') %}
+<section class="card glow pad-lg live-card" aria-live="polite">
+  <div class="live-head">
+    <span class="live-orb" aria-hidden="true"><span class="pulse-dot"></span></span>
+    <div>
+      <h2>{{ 'Evaluation in progress' if run.status == 'running' else 'Queued, waiting for a worker' }}</h2>
+      <p class="muted small">This page refreshes automatically. You can leave it; the run continues in the background.</p>
+    </div>
+  </div>
+  <div class="scan-bar" aria-hidden="true"><span></span></div>
+  {% if run.config.estimated_llm_requests %}
+  <p class="notice">{{ icon('key') }} Up to about <strong>{{ run.config.estimated_llm_requests }}</strong> requests will be sent with your key.</p>
+  {% endif %}
+  <pre class="log">{{ run.log or 'waiting for a worker…' }}</pre>
+</section>
+
+{% elif run.status == 'failed' %}
+<section class="card pad-lg fail-card" role="alert">
+  <span class="fail-icon" aria-hidden="true">{{ icon('alert') }}</span>
+  <div>
+    <h2>Run failed.</h2>
+    <p class="mono small fail-msg">{{ run.error }}</p>
+    <p class="muted small">Check the log below, fix the configuration and start a new run.</p>
+    <a class="btn ghost small" href="/runs/new?kind={{ run.kind }}">{{ icon('plus') }} New {{ run.kind }} run</a>
+  </div>
+</section>
+<details class="card"><summary>Log</summary><pre class="log">{{ run.log }}</pre></details>
+
+{% else %}
+{% set counts = s.findings_by_severity or {} %}
+{% set total = (counts.critical or 0) + (counts.high or 0) + (counts.medium or 0) + (counts.low or 0) %}
+{% set comp_after = s.post_fix_compliance_score if s.post_fix_compliance_score is defined else s.compliance_score %}
+<section class="card glow pad-lg run-hero reveal">
+  <div class="hero-gauge">
+    {% if s.health_score is not none %}
+      {% if fixed %}{{ gauge(s.post_fix_health_score, before=s.health_score, label='Health', size='lg') }}
+      {% else %}{{ gauge(s.health_score, label='Health', size='lg') }}{% endif %}
+    {% else %}<p class="muted">No health score</p>{% endif %}
+    <p class="muted small hero-caption">{{ 'Health after auto-fixes' if fixed else 'Health score' }}</p>
+  </div>
+
+  <div class="hero-main">
+    <p class="eyebrow">Verdict</p>
+    {{ verdict(s.verdict, 'lg') }}
+    <p class="sub verdict-copy">{{ {'PASS': 'All checks passed. Ready to ship.',
+      'PASS_WITH_WARNINGS': 'No blocking issues; medium-severity warnings to review.',
+      'NEEDS_WORK': 'High-severity findings or failed compliance controls need attention.',
+      'BLOCK': 'A critical finding or evaluator error blocks release.'}.get(s.verdict, '') }}</p>
+    <div class="hero-facts">
+      <div class="fact">
+        <span class="label">Checks passed</span>
+        <span class="value num"><span data-count="{{ s.evaluators_passed or 0 }}">{{ s.evaluators_passed or 0 }}</span><span class="muted"> / {{ s.evaluators_run or 0 }}</span></span>
+      </div>
+      <div class="fact">
+        <span class="label">Findings</span>
+        <span class="value num" data-count="{{ total }}">{{ total }}</span>
+      </div>
+      <div class="fact fact-gauge">
+        {% if comp_after is not none %}
+          {% if s.post_fix_compliance_score is defined %}{{ gauge(comp_after, before=s.compliance_score, label='Compliance', size='sm') }}
+          {% else %}{{ gauge(comp_after, label='Compliance', size='sm') }}{% endif %}
+        {% else %}<span class="label">Compliance</span><span class="value muted">-</span>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-sev" aria-label="Findings by severity">
+    <p class="eyebrow">Severity breakdown</p>
+    {% for k in ['critical', 'high', 'medium', 'low'] %}
+    {% set n = counts[k] or 0 %}
+    <div class="sev-row">
+      {{ sev(k) }}
+      <progress class="sevbar sb-{{ k }}" max="{{ [total, 1]|max }}" value="{{ n }}" aria-label="{{ k }}: {{ n }} of {{ total }}">{{ n }}</progress>
+      <span class="num sev-n" data-count="{{ n }}">{{ n }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="grid2 run-detail">
+  <section class="card reveal">
+    <div class="row between"><h2>{{ icon('alert') }} Findings</h2>{% if s.findings %}<span class="tag">{{ s.findings|length }}</span>{% endif %}</div>
+    {% if s.findings %}
+    <div class="tbl-scroll">
+    <table class="tbl compact">
+      <thead><tr><th>Severity</th><th>Finding</th>{% if fixed %}<th>After fixes</th>{% endif %}</tr></thead>
+      <tbody>
+      {% for f in s.findings %}
+      <tr><td>{{ sev(f.severity) }}</td>
+        <td><code>{{ f.code }}</code><span class="finding-title small">{{ f.title }}</span><span class="muted small">{{ f.evaluator }}</span></td>
+        {% if fixed %}<td>{% if f.code in s.post_fix_codes %}<span class="state-chip is-remains">{{ icon('x') }} remains</span>{% else %}<span class="state-chip is-resolved">{{ icon('check') }} resolved</span>{% endif %}</td>{% endif %}
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><span class="empty-icon" aria-hidden="true">{{ icon('check') }}</span><p class="good">No findings. All checks passed.</p></div>
+    {% endif %}
+  </section>
+
+  <section class="card reveal">
+    <h2>{{ icon('bolt') }} Auto-fixes</h2>
+    {% if s.fixes %}
+    <ol class="timeline">
+      {% for f in s.fixes %}
+      {% set st = 'applied' if f.applied else ('rolled' if (f.notes or '').startswith('rolled back') else ('failed' if (f.notes or '').startswith('failed') else 'skipped')) %}
+      <li class="tl-item tl-{{ st }}">
+        <span class="tl-dot" aria-hidden="true">{{ icon({'applied': 'check', 'rolled': 'x', 'failed': 'alert'}.get(st, 'arrow-right')) }}</span>
+        <div class="tl-body">
+          <div class="row between gap"><code>{{ f.fix }}</code><span class="state-chip is-{{ st }}">{{ {'applied': 'applied', 'rolled': 'rolled back', 'failed': 'failed'}.get(st, 'skipped') }}</span></div>
+          {% if f.notes %}<p class="muted small">{{ f.notes }}</p>{% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+    {% else %}<p class="muted">{{ 'Auto-fix was turned off for this run.' if not scenario.autofix else 'No automatic fixes were needed or available.' }}</p>{% endif %}
+
+    {% if others %}
+    <div class="compare-box">
+      <h3>{{ icon('compare') }} Compare with another run</h3>
+      <form method="get" action="/compare" class="row gap">
+        <input type="hidden" name="a" value="{{ run.id }}">
+        <select name="b" aria-label="Run to compare with">{% for o in others %}<option value="{{ o.id }}">{{ o.name }} · {{ o.created_at|ts }}</option>{% endfor %}</select>
+        <button class="btn ghost small">Compare</button>
+      </form>
+    </div>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card flush reveal report-card">
+  <div class="card-head row between"><h2>{{ icon('chart') }} Full report</h2><span class="muted small">Recommendations, root-cause diagnosis, compliance controls and metrics</span></div>
+  <iframe class="report" src="/runs/{{ run.id }}/report.html" sandbox title="Full evaluation report"></iframe>
+</section>
+<details class="card"><summary>Run log</summary><pre class="log">{{ run.log }}</pre></details>
+{% endif %}
+{% endblock %}

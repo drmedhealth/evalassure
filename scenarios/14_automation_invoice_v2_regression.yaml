@@ -1,0 +1,12 @@
+# USE CASE: Regression test after the engineering team fixed the invoice workflow (v2).
+# Run in CI with:  aitesteval run scenarios/14_automation_invoice_v2_regression.yaml --fail-on high
+name: Invoice automation v2 regression
+use_case: CI regression gate for a fixed workflow
+task: automation
+automation:
+  cases: datasets/automation/invoice_cases.yaml
+model:
+  workflow: invoice
+  params: {version: v2}
+evaluators: [automation]
+autofix: true

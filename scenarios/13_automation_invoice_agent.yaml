@@ -1,0 +1,28 @@
+# USE CASE: AI-assisted accounts-payable automation (extract -> validate -> approve/escalate -> post to ERP).
+# SCENARIO: v1 of the workflow has realistic bugs: EU number formats mis-parsed, no retries on flaky
+#           APIs, duplicate ERP postings on webhook replay, and it pays high-value invoices without
+#           human approval (excessive agency).
+# GOAL: Catch them all; auto-fix what is safely fixable (retry + idempotency middleware) and give
+#       precise troubleshooting for logic bugs that need a code change.
+name: Invoice processing automation
+use_case: Accounts-payable workflow automation with tool calls
+task: automation
+automation:
+  cases: datasets/automation/invoice_cases.yaml
+model:
+  workflow: invoice
+  params: {version: v1}
+evaluators: [automation]
+compliance: [eu_ai_act, owasp_llm, nist_ai_rmf]
+autofix: true
+model_card:
+  owner: finance-automation@corp.example
+  version: 1.0.0
+  risk_level: high
+  intended_use: Automate approval of supplier invoices below the approval limit.
+  limitations: Single-currency invoices only.
+  training_data: n/a (rules + extraction model)
+  human_oversight: AP clerk approves invoices above 10,000.
+  logging_enabled: true
+  risk_assessment: docs/risk/ap-automation.md
+  affects_individuals: false

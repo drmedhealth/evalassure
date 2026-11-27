@@ -1,0 +1,28 @@
+# USE CASE: Automated valuation model (AVM) for mortgage pre-approval.
+# GOAL: Regression accuracy (R2, MAPE), systematic bias, error disparity across neighbourhoods,
+#       robustness and explainability.
+name: House price valuation regression
+use_case: Automated property valuation
+task: regression
+data:
+  generator: housing
+  params: {n: 4000}
+  split: {test_size: 0.25, val_size: 0.15, seed: 5}
+model:
+  builtin: ridge
+  params: {alpha: 1.0}
+evaluators:
+  - data_quality
+  - name: regression
+    thresholds: {r2: 0.8, mape_max: 0.12}
+  - name: fairness
+    sensitive: [neighbourhood]
+  - robustness
+  - explainability
+compliance: [nist_ai_rmf]
+autofix: true
+model_card:
+  owner: valuation@lender.example
+  intended_use: Pre-approval price estimate.
+  limitations: Not a substitute for a final appraisal.
+  monitoring_plan: Quarterly back-testing against sale prices.

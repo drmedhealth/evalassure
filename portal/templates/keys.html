@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}Keys{% endblock %}
+{% block content %}
+<header class="page-head reveal">
+  <div>
+    <p class="eyebrow">Bring your own key</p>
+    <h1>Provider <span class="grad-text">keys</span></h1>
+    <p class="sub">Runs call providers with your credentials, and the provider bills your account directly.</p>
+  </div>
+</header>
+
+<div class="grid2">
+  <form method="post" action="/keys" class="card pad-lg stack reveal" id="key-form">
+    <h2>{{ icon('plus') }} Add a provider key</h2>
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Provider <select name="provider" id="key-provider">
+      <option value="anthropic"{% if form and form.provider == 'anthropic' %} selected{% endif %}>Anthropic (Claude)</option>
+      <option value="openai_compatible"{% if form and form.provider == 'openai_compatible' %} selected{% endif %}>OpenAI-compatible endpoint</option>
+      <option value="model_endpoint"{% if form and form.provider == 'model_endpoint' %} selected{% endif %}>My ML model endpoint (Bearer token)</option></select></label>
+    <label>Label <input name="label" maxlength="80" value="{{ form.label if form else '' }}" placeholder="e.g. team prod key"></label>
+    <label data-for="openai_compatible">Base URL <input name="base_url" type="url" value="{{ form.base_url if form else '' }}" placeholder="https://api.example.com/v1">
+      <span class="hint">The URL that <code>/chat/completions</code> is appended to.{% if not settings.allow_private_urls %} Must be a public address.{% endif %}</span></label>
+    <label>Key <input name="secret" type="password" required autocomplete="off" spellcheck="false"></label>
+    <div><button class="btn magnetic">{{ icon('key') }} Save key</button></div>
+  </form>
+
+  <section class="card pad-lg reveal byok">
+    <div class="byok-head">
+      <span class="byok-shield float" aria-hidden="true">{{ icon('shield') }}</span>
+      <div><h2>How your keys are handled</h2><p class="muted small">Security by design, end to end.</p></div>
+    </div>
+    <ul class="checklist">
+      <li>{{ icon('check') }}<span>Encrypted at rest (AES with HMAC, Fernet) with a server-side master key.</span></li>
+      <li>{{ icon('check') }}<span>Never displayed again after saving; only the last 4 characters are shown.</span></li>
+      <li>{{ icon('check') }}<span>Decrypted only in memory while one of your runs is executing.</span></li>
+      <li>{{ icon('check') }}<span>Never written to run configs, logs or reports, and redacted if a provider error echoes them.</span></li>
+      <li>{{ icon('check') }}<span>Deleted immediately when you delete them or your account.</span></li>
+    </ul>
+    <p class="notice">{{ icon('sparkles') }} Tip: create a dedicated key with a spending limit in your provider's console for testing.</p>
+  </section>
+</div>
+
+<section class="reveal">
+  <h2 class="section-title">Saved keys{% if keys %} <span class="tag">{{ keys|length }}</span>{% endif %}</h2>
+  {% if keys %}
+  <div class="grid3 key-grid">
+    {% for k in keys %}
+    <article class="card tilt reveal key-card">
+      <div class="row between gap">
+        <span class="key-ico p-{{ k.provider }}" aria-hidden="true">{{ icon({'anthropic': 'sparkles', 'openai_compatible': 'code', 'model_endpoint': 'cpu'}.get(k.provider, 'key')) }}</span>
+        <span class="tag">{{ {'anthropic': 'Anthropic', 'openai_compatible': 'OpenAI-compatible', 'model_endpoint': 'ML endpoint'}[k.provider] }}</span>
+      </div>
+      <h3 class="key-label">{{ k.label }}</h3>
+      {% if k.base_url %}<p class="muted small mono key-url">{{ k.base_url }}</p>{% endif %}
+      <code class="key-mask">{{ k.masked }}</code>
+      <dl class="key-meta small">
+        <div><dt class="muted">Added</dt><dd>{{ k.created_at|ts }}</dd></div>
+        <div><dt class="muted">Last used</dt><dd>{{ k.last_used_at|ts or 'never' }}</dd></div>
+      </dl>
+      <form method="post" action="/keys/{{ k.id }}/delete" data-confirm="Delete this key? Queued runs that use it will fail."><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn danger small" aria-label="Delete key {{ k.label }}">{{ icon('trash') }} Delete</button></form>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card empty"><div class="empty-state"><span class="empty-icon" aria-hidden="true">{{ icon('key') }}</span><p class="muted">No keys saved.</p></div></div>
+  {% endif %}
+</section>
+{% endblock %}

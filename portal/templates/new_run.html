@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}New run{% endblock %}
+
+{% macro step(n, title, hint='') %}
+<header class="fstep-head">
+  <span class="fstep-num" aria-hidden="true">{{ n }}</span>
+  <div><h2>{{ title }}</h2>{% if hint %}<p class="hint">{{ hint }}</p>{% endif %}</div>
+</header>
+{% endmacro %}
+
+{% macro card_fields(prefix_open=false) %}
+<details class="sub"{% if prefix_open %} open{% endif %}>
+  <summary>Model card (used by compliance checks)</summary>
+  <div class="grid2 tight">
+    <label>Owner <input name="mc_owner" value="{{ form.get('mc_owner', '') }}" placeholder="team or contact"></label>
+    <label>Version <input name="mc_version" value="{{ form.get('mc_version', '') }}" placeholder="1.0.0"></label>
+    <label>Domain <select name="mc_domain">{% for d in S.DOMAINS %}<option value="{{ d }}"{% if form.get('mc_domain') == d %} selected{% endif %}>{{ d or '(not set)' }}</option>{% endfor %}</select></label>
+    <label>Risk level <select name="mc_risk_level">{% for d in S.RISK_LEVELS %}<option value="{{ d }}"{% if form.get('mc_risk_level') == d %} selected{% endif %}>{{ d or '(not set)' }}</option>{% endfor %}</select></label>
+  </div>
+  <label>Intended use <textarea name="mc_intended_use" rows="2">{{ form.get('mc_intended_use', '') }}</textarea></label>
+  <label>Known limitations <textarea name="mc_limitations" rows="2">{{ form.get('mc_limitations', '') }}</textarea></label>
+  <label>Human oversight <input name="mc_human_oversight" value="{{ form.get('mc_human_oversight', '') }}" placeholder="who can review or override decisions, and how"></label>
+  <label>Monitoring plan <input name="mc_monitoring_plan" value="{{ form.get('mc_monitoring_plan', '') }}"></label>
+  <div class="checks">
+    <label class="chk"><input type="checkbox" name="mc_logging_enabled"{% if form.get('mc_logging_enabled') %} checked{% endif %}> Decisions are logged</label>
+    <label class="chk"><input type="checkbox" name="mc_dpia_completed"{% if form.get('mc_dpia_completed') %} checked{% endif %}> DPIA completed</label>
+    <label class="chk"><input type="checkbox" name="mc_ai_disclosure"{% if form.get('mc_ai_disclosure') %} checked{% endif %}> Users are told they interact with AI</label>
+    <label class="chk"><input type="checkbox" name="mc_automated_decision"{% if form.get('mc_automated_decision') %} checked{% endif %}> Makes automated decisions about people</label>
+  </div>
+</details>
+{% endmacro %}
+
+{% macro frameworks(defaults) %}
+<fieldset><legend>Compliance frameworks</legend>
+  <div class="checks">{% for k, v in S.FRAMEWORKS.items() %}
+    <label class="chk"><input type="checkbox" name="compliance" value="{{ k }}"{% if k in defaults %} checked{% endif %}> {{ v }}</label>{% endfor %}</div>
+</fieldset>
+{% endmacro %}
+
+{% block content %}
+<header class="page-head reveal">
+  <div>
+    <p class="eyebrow">Launch</p>
+    <h1>New <span class="grad-text">run</span></h1>
+    <p class="sub">Pick what to test. Every run scores health and compliance, diagnoses root causes and can verify auto-fixes.</p>
+  </div>
+</header>
+
+<nav class="tabs kind-tabs reveal" aria-label="Run type">
+  <a href="/runs/new?kind=demo" class="{{ 'on' if kind == 'demo' }}"{% if kind == 'demo' %} aria-current="page"{% endif %}>
+    <span class="kt-icon" aria-hidden="true">{{ icon('flask') }}</span>
+    <span class="kt-text"><strong>Demo scenario</strong><span class="small muted">No key needed</span></span></a>
+  <a href="/runs/new?kind=ml" class="{{ 'on' if kind == 'ml' }}"{% if kind == 'ml' %} aria-current="page"{% endif %}>
+    <span class="kt-icon" aria-hidden="true">{{ icon('cpu') }}</span>
+    <span class="kt-text"><strong>ML model (CSV)</strong><span class="small muted">Your data, baseline or endpoint</span></span></a>
+  <a href="/runs/new?kind=llm" class="{{ 'on' if kind == 'llm' }}"{% if kind == 'llm' %} aria-current="page"{% endif %}>
+    <span class="kt-icon" aria-hidden="true">{{ icon('sparkles') }}</span>
+    <span class="kt-text"><strong>LLM app (your key)</strong><span class="small muted">Anthropic or OpenAI-compatible</span></span></a>
+</nav>
+
+{% if kind == 'demo' %}
+{% set first_demo = (demos|list)[0] if demos else '' %}
+{% set picked = form.get('demo') or first_demo %}
+{% set task_meta = {'classification': ('cpu', 'Classification models'), 'regression': ('chart', 'Regression models'),
+                    'llm': ('sparkles', 'LLM apps'), 'automation': ('bolt', 'Automations')} %}
+<form method="post" action="/runs" class="card pad-lg stack reveal">
+  <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="kind" value="demo">
+  <section class="fstep">
+  {{ step(1, 'Pick a scenario', 'Ready-made scenarios with synthetic data and simulated models, each with a planted problem. No key needed.') }}
+  {% for task in demos.values()|map(attribute='task')|unique %}
+  {% set meta = task_meta.get(task, ('flask', task|capitalize)) %}
+  <fieldset class="demo-group">
+    <legend class="group-label">{{ icon(meta[0]) }} {{ meta[1] }}</legend>
+    <div class="choices">
+      {% for k, d in demos.items() if d.task == task %}
+      <label class="choice"><input type="radio" name="demo" value="{{ k }}"{% if k == picked %} checked{% endif %}>
+        <span class="choice-body">
+          <span class="choice-icon" aria-hidden="true">{{ icon(meta[0]) }}</span>
+          <strong>{{ d.name }}</strong>
+          <span class="muted small">{{ d.use_case }}</span>
+          <span class="tag">{{ d.task }}</span>
+        </span>
+      </label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  {% endfor %}
+  </section>
+  <section class="fstep">
+  {{ step(2, 'Run') }}
+  <label class="chk"><input type="checkbox" name="autofix" checked> Apply auto-fixes and verify them</label>
+  <div class="submit-row"><button class="btn lg magnetic">{{ icon('bolt') }} Start run</button></div>
+  </section>
+</form>
+
+{% elif kind == 'ml' %}
+{% if not datasets|selectattr('kind', 'equalto', 'csv')|list %}
+<section class="card empty pad-lg reveal">
+  <div class="empty-state">
+    <span class="empty-icon float" aria-hidden="true">{{ icon('database') }}</span>
+    <h2>Upload a CSV first</h2>
+    <p class="muted">Your dataset needs a header row and a target column.</p>
+    <a class="btn magnetic" href="/datasets">{{ icon('plus') }} Upload a dataset</a>
+  </div>
+</section>
+{% else %}
+<script type="application/json" id="ds-columns">{{ datasets|selectattr('kind', 'equalto', 'csv')|map(attribute='id')|list|tojson }}</script>
+{% for d in datasets if d.kind == 'csv' %}<script type="application/json" id="cols-{{ d.id }}">{{ d.columns|tojson }}</script>{% endfor %}
+<form method="post" action="/runs" class="card pad-lg stack reveal" id="ml-form">
+  <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="kind" value="ml">
+
+  <section class="fstep">
+    {{ step(1, 'Data', 'Name the run, choose the dataset and tell us which column to predict.') }}
+    <div class="grid2 tight">
+      <label>Run name <input name="name" required maxlength="120" value="{{ form.get('name', '') }}" placeholder="Loan model v3 audit"></label>
+      <label>Task <select name="task" id="ml-task">
+        <option value="classification"{% if form.get('task') != 'regression' %} selected{% endif %}>Classification</option>
+        <option value="regression"{% if form.get('task') == 'regression' %} selected{% endif %}>Regression</option></select></label>
+      <label>Dataset <select name="dataset_id" id="ml-dataset" required>
+        {% for d in datasets if d.kind == 'csv' %}<option value="{{ d.id }}"{% if form.get('dataset_id') == d.id %} selected{% endif %}>{{ d.name }} ({{ d.rows }} rows)</option>{% endfor %}</select></label>
+      <label>Target column <select name="target" id="ml-target" required data-selected="{{ form.get('target', '') }}"></select></label>
+    </div>
+    <fieldset><legend>Sensitive attributes <span class="hint">kept out of the model, used for fairness checks</span></legend>
+      <div class="checks" id="ml-sensitive" data-name="sensitive"></div></fieldset>
+    <fieldset><legend>Columns to ignore <span class="hint">IDs, timestamps, free text</span></legend>
+      <div class="checks" id="ml-drop" data-name="drop"></div></fieldset>
+    <div class="grid2 tight">
+      <label>Production data (optional) <select name="production_dataset_id"><option value="">None: skip drift checks</option>
+        {% for d in datasets if d.kind == 'csv' %}<option value="{{ d.id }}"{% if form.get('production_dataset_id') == d.id %} selected{% endif %}>{{ d.name }}</option>{% endfor %}</select>
+        <span class="hint">Recent labelled data, to measure drift and performance decay.</span></label>
+      <label>Favourable label (optional) <input name="favorable_label" value="{{ form.get('favorable_label', '') }}" placeholder="e.g. 1 = approved">
+        <span class="hint">Which outcome benefits the person, for fairness. Default: the highest class.</span></label>
+    </div>
+  </section>
+
+  <section class="fstep">
+    {{ step(2, 'Model', 'Train a baseline on your data, or point us at the model you already deployed.') }}
+    <div class="model-pick" role="radiogroup" aria-label="Model">
+      <div class="choices two">
+        <div class="model-opt">
+          <label class="choice"><input type="radio" name="model_type" value="builtin"{% if form.get('model_type') != 'endpoint' %} checked{% endif %}>
+            <span class="choice-body"><span class="choice-icon" aria-hidden="true">{{ icon('cpu') }}</span><strong>Train a baseline on this data</strong>
+              <span class="muted small">Retraining fixes are available with a baseline.</span></span></label>
+          <div class="indent"><select name="builtin" aria-label="Baseline model">
+            {% for task, models in S.ML_MODELS.items() %}{% for k, v in models.items() %}<option value="{{ k }}" data-task="{{ task }}"{% if form.get('builtin') == k %} selected{% endif %}>{{ v }} ({{ task }})</option>{% endfor %}{% endfor %}</select></div>
+        </div>
+        <div class="model-opt">
+          <label class="choice"><input type="radio" name="model_type" value="endpoint"{% if form.get('model_type') == 'endpoint' %} checked{% endif %}>
+            <span class="choice-body"><span class="choice-icon" aria-hidden="true">{{ icon('code') }}</span><strong>Call my deployed model over HTTP</strong>
+              <span class="muted small">Black-box testing of your live endpoint.</span></span></label>
+          <div class="indent stack">
+            <label>Endpoint URL <input name="endpoint_url" type="url" value="{{ form.get('endpoint_url', '') }}" placeholder="https://models.example.com/predict"></label>
+            <label>Endpoint key (optional) <select name="endpoint_key_id"><option value="">None</option>
+              {% for k in keys if k.provider == 'model_endpoint' %}<option value="{{ k.id }}">{{ k.label }} {{ k.masked }}</option>{% endfor %}</select></label>
+          </div>
+        </div>
+      </div>
+      <p class="hint">The endpoint receives <code>{"feature_names": [...], "instances": [[...]]}</code> and returns <code>{"predictions": [...]}</code> and/or <code>{"probabilities": [[...]]}</code>. See the <a href="/docs">API docs</a>.</p>
+    </div>
+  </section>
+
+  <section class="fstep">
+    {{ step(3, 'Compliance & model card', 'Frameworks to map findings to, and the documentation the compliance checks read.') }}
+    {{ frameworks(['eu_ai_act', 'nist_ai_rmf', 'gdpr']) }}
+    {{ card_fields() }}
+  </section>
+
+  <section class="fstep">
+    {{ step(4, 'Run') }}
+    <label class="chk"><input type="checkbox" name="autofix" checked> Apply auto-fixes and verify them (retraining fixes need the baseline model)</label>
+    <div class="submit-row"><button class="btn lg magnetic">{{ icon('bolt') }} Start run</button></div>
+  </section>
+</form>
+{% endif %}
+
+{% else %}
+{% set llm_keys = keys|selectattr('provider', 'in', ['anthropic', 'openai_compatible'])|list %}
+{% if not llm_keys %}
+<section class="card empty pad-lg reveal">
+  <div class="empty-state">
+    <span class="empty-icon float" aria-hidden="true">{{ icon('key') }}</span>
+    <h2>Add a provider key first</h2>
+    <p class="muted">LLM runs use your own Anthropic key or an OpenAI-compatible endpoint (vLLM, LiteLLM, Together, Groq and others).</p>
+    <a class="btn magnetic" href="/keys">{{ icon('plus') }} Add a key</a>
+  </div>
+</section>
+{% else %}
+<form method="post" action="/runs" class="card pad-lg stack reveal" id="llm-form">
+  <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="kind" value="llm">
+
+  <section class="fstep">
+    {{ step(1, 'Data', 'Name the run and choose the test cases to send to your app.') }}
+    <div class="grid2 tight">
+      <label>Run name <input name="name" required maxlength="120" value="{{ form.get('name', '') }}" placeholder="Support bot, Opus 5.5"></label>
+      <label>Test cases <select name="cases" id="llm-cases">
+        {% for k, v in S.BUILTIN_CASES.items() %}<option value="{{ k }}" data-n="{{ 30 if k == 'support_bot' else 15 }}"{% if form.get('cases') == k %} selected{% endif %}>{{ v[0] }}</option>{% endfor %}
+        {% for d in datasets if d.kind == 'jsonl' %}<option value="{{ d.id }}" data-n="{{ d.rows }}"{% if form.get('cases') == d.id %} selected{% endif %}>{{ d.name }} ({{ d.rows }} cases)</option>{% endfor %}</select></label>
+    </div>
+  </section>
+
+  <section class="fstep">
+    {{ step(2, 'Model', 'The key, model and system prompt of the app under test.') }}
+    <div class="grid2 tight">
+      <label>Key <select name="key_id" id="llm-key" required>
+        {% for k in llm_keys %}<option value="{{ k.id }}" data-provider="{{ k.provider }}"{% if form.get('key_id') == k.id %} selected{% endif %}>{{ k.label }} ({{ 'Anthropic' if k.provider == 'anthropic' else k.base_url }}) {{ k.masked }}</option>{% endfor %}</select></label>
+      <input type="hidden" name="provider" id="llm-provider" value="{{ llm_keys[0].provider }}">
+      <label>Model <input name="llm_model" list="claude-models" required value="{{ form.get('llm_model', 'claude-opus-5-5') }}">
+        <datalist id="claude-models">{% for m in S.CLAUDE_MODELS %}<option value="{{ m }}">{% endfor %}</datalist>
+        <span class="hint">For OpenAI-compatible endpoints, use that server's model name.</span></label>
+    </div>
+    <label>System prompt of the app under test <textarea name="system_prompt" rows="4" placeholder="You are ShopBot, a customer-support assistant. Answer only from the provided context…">{{ form.get('system_prompt', '') }}</textarea>
+      <span class="hint">A unique canary code is appended automatically to detect system-prompt leaks.</span></label>
+    <div class="grid3 tight">
+      <label>Max output tokens <input name="max_tokens" type="number" min="16" max="{{ settings.max_llm_output_tokens }}" value="{{ form.get('max_tokens', 1024) }}"></label>
+      <label>Consistency cases <input name="consistency_cases" id="llm-consistency" type="number" min="0" max="10" value="{{ form.get('consistency_cases', 3) }}">
+        <span class="hint">Each is asked 3 times to measure answer stability.</span></label>
+      <label>Price per 1M tokens, input / output (USD)
+        <span class="row gap price-pair"><input name="price_per_mtok_input" type="number" step="0.01" min="0" value="{{ form.get('price_per_mtok_input', 0) }}" aria-label="Input price">
+        <input name="price_per_mtok_output" type="number" step="0.01" min="0" value="{{ form.get('price_per_mtok_output', 0) }}" aria-label="Output price"></span>
+        <span class="hint">Optional: from your provider's price list, for cost estimates.</span></label>
+    </div>
+    <fieldset><legend>Guardrails to test the app with <span class="hint">optional</span></legend>
+      <div class="checks">{% for k, v in S.GUARDRAILS.items() %}<label class="chk"><input type="checkbox" name="guardrails" value="{{ k }}"> {{ v }}</label>{% endfor %}</div></fieldset>
+  </section>
+
+  <section class="fstep">
+    {{ step(3, 'Compliance & model card', 'Frameworks to map findings to, and the documentation the compliance checks read.') }}
+    {{ frameworks(['owasp_llm', 'eu_ai_act', 'gdpr']) }}
+    {{ card_fields() }}
+  </section>
+
+  <section class="fstep">
+    {{ step(4, 'Run') }}
+    <label class="chk"><input type="checkbox" name="autofix" id="llm-autofix"> Try guardrail auto-fixes (each candidate re-runs every case on your key, up to 8× the requests)</label>
+    <p class="notice" id="llm-estimate">{{ icon('key') }} This run will send about <strong data-est>…</strong> requests to your provider using your key. Your provider bills you for them.</p>
+    <div class="submit-row"><button class="btn lg magnetic">{{ icon('bolt') }} Start run</button></div>
+  </section>
+</form>
+{% endif %}
+{% endif %}
+{% endblock %}

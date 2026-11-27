@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% from "_macros.html" import verdict, status, gauge, icon %}
+{% block title %}Runs{% endblock %}
+
+{% macro kind_icon(kind) -%}
+{{ icon({'demo': 'flask', 'ml': 'cpu', 'llm': 'sparkles'}.get(kind, 'runs')) }}
+{%- endmacro %}
+
+{% macro health_cell(s) -%}
+{% if s and s.health_score is not none %}
+  {% if s.post_fix_health_score is defined and s.post_fix_health_score is not none %}
+    {% set d = s.post_fix_health_score - s.health_score %}
+    <span class="hscore"><span class="num muted">{{ s.health_score }}</span><span class="arrow" aria-label="to">→</span><strong class="num">{{ s.post_fix_health_score }}</strong>
+    {% if d %}<span class="delta {{ 'up' if d > 0 else 'down' }}">{{ '%+d'|format(d) }}</span>{% endif %}</span>
+  {% else %}<strong class="num">{{ s.health_score }}</strong>{% endif %}
+{% else %}<span class="muted">-</span>{% endif %}
+{%- endmacro %}
+
+{% block content %}
+{% set done_runs = runs|selectattr('status', 'equalto', 'done')|list %}
+<header class="page-head reveal">
+  <div>
+    <p class="eyebrow">Workspace</p>
+    <h1>Evaluation <span class="grad-text">runs</span></h1>
+    <p class="sub">Every test, compliance check and auto-fix you have run, with an auditable report for each.</p>
+  </div>
+  <div class="row gap">
+    <a class="btn ghost" href="/datasets">{{ icon('database') }} Datasets</a>
+    <a class="btn magnetic" href="/runs/new">{{ icon('plus') }} New run</a>
+  </div>
+</header>
+
+<section class="stats kpis" aria-label="Summary">
+  <div class="stat tilt reveal">
+    <span class="kpi-icon" aria-hidden="true">{{ icon('runs') }}</span>
+    <span class="label">Total runs</span>
+    <span class="value num" data-count="{{ stats.total }}">{{ stats.total }}</span>
+    <span class="trend muted">{{ done_runs|length }} finished</span>
+  </div>
+  <div class="stat tilt reveal{{ ' is-live' if stats.active }}">
+    <span class="kpi-icon" aria-hidden="true">{{ icon('bolt') }}</span>
+    <span class="label">In progress</span>
+    <span class="value num" data-count="{{ stats.active }}">{{ stats.active }}</span>
+    <span class="trend muted">{% if stats.active %}<span class="pulse-dot" aria-hidden="true"></span> live, refreshing{% else %}idle{% endif %}</span>
+  </div>
+  <div class="stat tilt reveal{{ ' is-bad' if stats.blocked }}">
+    <span class="kpi-icon" aria-hidden="true">{{ icon('shield') }}</span>
+    <span class="label">Blocked</span>
+    <span class="value num" data-count="{{ stats.blocked }}">{{ stats.blocked }}</span>
+    <span class="trend muted">{{ 'release blocked by a critical finding' if stats.blocked else 'nothing blocked' }}</span>
+  </div>
+  <div class="stat tilt reveal kpi-gauge">
+    <div>
+      <span class="label">Average health</span>
+      <span class="value num"{% if stats.avg_health is not none %} data-count="{{ stats.avg_health }}"{% endif %}>{{ stats.avg_health if stats.avg_health is not none else '-' }}</span>
+      <span class="trend muted">after fixes</span>
+    </div>
+    {% if stats.avg_health is not none %}{{ gauge(stats.avg_health, label='Avg', size='sm') }}{% endif %}
+  </div>
+</section>
+
+{% if not runs %}
+<section class="card empty pad-lg reveal">
+  <div class="empty-state">
+    <span class="empty-icon float" aria-hidden="true">{{ icon('sparkles') }}</span>
+    <h2>No runs yet</h2>
+    <p class="muted">Start with a ready-made scenario (no key needed), upload your own CSV, or connect an LLM with your own key.</p>
+  </div>
+  <div class="grid3 action-cards">
+    <a class="card tilt reveal action-card" href="/runs/new?kind=demo">
+      <span class="action-icon" aria-hidden="true">{{ icon('flask') }}</span>
+      <strong>Run a demo scenario</strong>
+      <span class="muted small">Synthetic data with a planted problem. Results in seconds.</span>
+      <span class="action-go">Start {{ icon('arrow-right') }}</span>
+    </a>
+    <a class="card tilt reveal action-card" href="/runs/new?kind=ml">
+      <span class="action-icon" aria-hidden="true">{{ icon('cpu') }}</span>
+      <strong>Test an ML model</strong>
+      <span class="muted small">Upload a CSV, train a baseline or call your endpoint.</span>
+      <span class="action-go">Configure {{ icon('arrow-right') }}</span>
+    </a>
+    <a class="card tilt reveal action-card" href="/runs/new?kind=llm">
+      <span class="action-icon" aria-hidden="true">{{ icon('sparkles') }}</span>
+      <strong>Test an LLM</strong>
+      <span class="muted small">Red-team and evaluate your LLM app with your own key.</span>
+      <span class="action-go">Connect {{ icon('arrow-right') }}</span>
+    </a>
+  </div>
+</section>
+{% else %}
+<form method="get" action="/compare" class="card flush reveal runs-table">
+  <div class="card-head row between">
+    <h2 class="section-title">Recent runs</h2>
+    <span class="muted small">Pick finished runs as <span class="kbd">A</span> and <span class="kbd">B</span> to compare them</span>
+  </div>
+  <div class="tbl-scroll">
+  <table class="tbl">
+    <thead><tr><th class="sel">A</th><th class="sel">B</th><th>Name</th><th>Status</th><th>Verdict</th>
+      <th class="r">Health</th><th class="r">Compliance</th><th>Started</th><th class="r">Took</th></tr></thead>
+    <tbody>
+    {% for r in runs %}
+    <tr class="{{ 'row-live' if r.status in ('queued', 'running') }}">
+      <td class="sel">{% if r.status == 'done' %}<input type="radio" name="a" value="{{ r.id }}" aria-label="Compare {{ r.name }} as A">{% endif %}</td>
+      <td class="sel">{% if r.status == 'done' %}<input type="radio" name="b" value="{{ r.id }}" aria-label="Compare {{ r.name }} as B">{% endif %}</td>
+      <td>
+        <a class="run-name" href="/runs/{{ r.id }}"><span class="kind-ico k-{{ r.kind }}" aria-hidden="true">{{ kind_icon(r.kind) }}</span><span>{{ r.name }}</span></a>
+        <span class="run-meta muted small">{{ r.kind }}{% if r.task %} · {{ r.task }}{% endif %}</span>
+      </td>
+      <td>{{ status(r.status) }}</td>
+      <td>{{ verdict(r.summary.verdict) }}</td>
+      <td class="r">{{ health_cell(r.summary) }}</td>
+      <td class="r num">{% set c = r.summary.post_fix_compliance_score if r.summary.post_fix_compliance_score is defined else r.summary.compliance_score %}{{ c if c is not none else '-' }}</td>
+      <td class="muted small nowrap">{{ r.created_at|ts }}</td>
+      <td class="r muted small">{{ r|dur }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <div class="card-foot row end"><button class="btn ghost small">{{ icon('compare') }} Compare A and B</button></div>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,91 @@
+{# Shared UI macros. Import with: {% import "_macros.html" as m %} #}
+
+{% macro verdict(v, size='') -%}
+{% if v %}<span class="badge v-{{ v|lower }}{{ ' ' ~ size if size }}">{{ v|replace('_', ' ') }}</span>{% endif %}
+{%- endmacro %}
+
+{% macro status(st) -%}
+<span class="status s-{{ st }}">{% if st == 'running' %}<span class="spin" aria-hidden="true"></span>{% elif st == 'queued' %}<span class="pulse-dot" aria-hidden="true"></span>{% elif st == 'done' %}{{ icon('check') }}{% elif st == 'failed' %}{{ icon('x') }}{% endif %}{{ st }}</span>
+{%- endmacro %}
+
+{% macro health(s) -%}
+{% if s and s.health_score is not none %}
+  {% if s.post_fix_health_score is defined %}
+    <span class="num">{{ s.health_score }}</span> <span class="muted" aria-hidden="true">→</span><span class="sr-only">to</span> <strong class="num">{{ s.post_fix_health_score }}</strong>
+  {% else %}<strong class="num">{{ s.health_score }}</strong>{% endif %}
+{% else %}<span class="muted">-</span>{% endif %}
+{%- endmacro %}
+
+{% macro sev(x) -%}<span class="sev sev-{{ x }}">{{ x }}</span>{%- endmacro %}
+
+{#- Health ring. value/before: 0..100 (or none). size: sm | md | lg.
+    uid makes the SVG gradient id unique; pass one when two gauges on a page share label + value + before. -#}
+{% macro gauge(value, before=none, label='Health', size='md', uid=none) -%}
+{%- set v = value if value is not none else 0 -%}
+{%- set vc = [[v|float, 0]|max, 100]|min -%}
+{%- set gid = 'gg-' ~ ((uid ~ '') if uid is not none else ((label|lower|replace(' ', '-')) ~ '-' ~ v ~ '-' ~ (before if before is not none else 'x')))|replace('.', '_') -%}
+{%- set tone = 'g-none' if value is none else ('g-bad' if vc < 50 else ('g-warn' if vc < 75 else 'g-good')) -%}
+<div class="gauge gauge-{{ size }} {{ tone }} gp-{{ ((vc / 5)|round|int) * 5 }}" data-value="{{ v }}"{% if before is not none %} data-before="{{ before }}"{% endif %}
+     role="img" aria-label="{{ label }} {{ value if value is not none else 'n/a' }} of 100{% if before is not none %} (was {{ before }}){% endif %}">
+  <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+    <defs><linearGradient id="{{ gid }}" x1="0" y1="0" x2="1" y2="1"><stop class="gs-a" offset="0"/><stop class="gs-b" offset="1"/></linearGradient></defs>
+    <circle class="gauge-track" cx="60" cy="60" r="52"/>
+    <circle class="gauge-fill" cx="60" cy="60" r="52" stroke="url(#{{ gid }})"/>
+  </svg>
+  <div class="gauge-center">
+    {% if value is not none %}<span class="gauge-num" data-count="{{ value }}"{% if before is not none %} data-count-from="{{ before }}"{% endif %}>{{ value }}</span>{% else %}<span class="gauge-num">-</span>{% endif %}
+    <span class="gauge-label">{{ label }}</span>
+    {% if before is not none %}<span class="gauge-delta">from {{ before }}</span>{% endif %}
+  </div>
+</div>
+{%- endmacro %}
+
+{#- Decorative inline icons (24 viewBox, stroke = currentColor). Unknown names render nothing. -#}
+{% macro icon(name, cls='') -%}
+{%- set paths = {
+  'runs': '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+  'plus': '<path d="M12 5v14M5 12h14"/>',
+  'database': '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/>',
+  'key': '<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.3-9.3M17 6l3 3M14.5 8.5l2 2"/>',
+  'settings': '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
+  'code': '<path d="m8 6-6 6 6 6M16 6l6 6-6 6"/>',
+  'shield': '<path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.3 7.5 9.5 4.3-1.2 7.5-4.9 7.5-9.5V6z"/><path d="m9 12 2.2 2.2L15.5 10"/>',
+  'bolt': '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  'chart': '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>',
+  'check': '<path d="M20 6 9 17l-5-5"/>',
+  'x': '<path d="M18 6 6 18M6 6l12 12"/>',
+  'alert': '<path d="M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4M12 17h.01"/>',
+  'cpu': '<rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+  'sparkles': '<path d="M11 3.5 12.9 8.6 18 10.5 12.9 12.4 11 17.5 9.1 12.4 4 10.5 9.1 8.6z"/><path d="m18.5 15 .9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z"/>',
+  'arrow-right': '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  'flask': '<path d="M9 3h6M10 3v6.2L4.6 18.4A2 2 0 0 0 6.3 21.5h11.4a2 2 0 0 0 1.7-3.1L14 9.2V3"/><path d="M7.2 15h9.6"/>',
+  'compare': '<path d="M8 3 4 7l4 4M4 7h16M16 21l4-4-4-4M20 17H4"/>',
+  'download': '<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>',
+  'trash': '<path d="M3 6h18M8 6V4h8v2M5.5 6l1 15h11l1-15M10 11v6M14 11v6"/>',
+  'lock': '<rect x="4.5" y="11" width="15" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/>',
+  'workflow': '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><path d="M6.5 10v4a3 3 0 0 0 3 3H14M17.5 14v-4a3 3 0 0 0-3-3H10"/>',
+  'upload': '<path d="M12 21V9M7 14l5-5 5 5M4 3h16"/>',
+  'logout': '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/>',
+  'eye-off': '<path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c5 0 9 4.5 10 7a12 12 0 0 1-3 4.2M6.6 6.6A12 12 0 0 0 2 12c1 2.5 5 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  'layers': '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+} -%}
+{%- if name in paths -%}
+<svg class="icon icon-{{ name }}{{ ' ' ~ cls if cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">{{ paths[name]|safe }}</svg>
+{%- endif -%}
+{%- endmacro %}
+
+{#- Animated brand mark. gid must be unique per page. -#}
+{% macro logo(gid='lm-g') -%}
+<svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="{{ gid }}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8b5cf6"/><stop offset=".55" stop-color="#6366f1"/><stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="30" height="30" rx="9" fill="url(#{{ gid }})"/>
+  <rect x="1.5" y="1.5" width="29" height="29" rx="8.5" fill="none" stroke="#fff" stroke-opacity=".25"/>
+  <circle class="lm-orbit" cx="16" cy="16" r="10.5" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1" stroke-dasharray="3 4"/>
+  <g class="lm-spin"><circle cx="26.5" cy="16" r="1.9" fill="#fff"/></g>
+  <path class="lm-check" d="M10.5 16.5l3.8 3.8 7.4-8.3" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+{%- endmacro %}

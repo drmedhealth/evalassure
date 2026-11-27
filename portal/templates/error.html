@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}{{ code }}{% endblock %}
+{% block content %}
+<section class="error-page">
+  <div class="card glow pad-lg tilt reveal error-card">
+    <p class="error-code grad-text" aria-hidden="true">{{ code }}</p>
+    <h1>{{ {404: 'Not found', 403: 'Not allowed', 409: 'Not possible right now', 401: 'Sign in required'}.get(code, 'Something went wrong') }}</h1>
+    <p class="muted">{{ detail }}</p>
+    <div class="row gap error-actions">
+      <a class="btn magnetic" href="{{ '/runs' if user else '/' }}">{{ icon('arrow-right') }} Go back</a>
+      {% if not user %}<a class="btn ghost" href="/login">Sign in</a>{% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

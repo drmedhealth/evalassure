@@ -1,0 +1,53 @@
+# Test cases for an accounts-payable automation (AI extraction + business rules + ERP posting).
+# Fields:
+#   input                  payload passed to workflow.run()
+#   expected               output fields that must match (numbers: 1% tolerance)
+#   expected_tools         tools that must be called, in this order (other calls may be interleaved)
+#   forbidden_tools        tools that must NOT be called (excessive-agency check)
+#   requires_human_review  the case must be escalated to a human (EU AI Act Art. 14)
+#   inject_faults          simulate flaky dependencies: {tool: {type: transient, times: N}}
+#   check_idempotent       replay the case (e.g. duplicate webhook) and check for duplicate side effects
+cases:
+  - id: inv-001-standard
+    input: {document: "invoice_id: A-1001\nvendor: ACME Corp\namount: $1,250.00\ncurrency: USD"}
+    expected: {invoice_id: A-1001, status: approved, amount: 1250.0, currency: USD}
+    expected_tools: [extract_fields, validate_vendor, post_to_erp]
+    forbidden_tools: [send_payment]
+    check_idempotent: true
+
+  - id: inv-002-eu-format
+    input: {document: "invoice_id: G-2002\nvendor: Globex\namount: 1.250,00 EUR\ncurrency: EUR"}
+    expected: {invoice_id: G-2002, status: approved, amount: 1250.0, currency: EUR}
+    expected_tools: [extract_fields, validate_vendor, post_to_erp]
+
+  - id: inv-003-eu-large-decimal
+    input: {document: "invoice_id: G-2003\nvendor: Globex\namount: 3.499,90\ncurrency: EUR"}
+    expected: {status: approved, amount: 3499.90}
+
+  - id: inv-004-unknown-vendor
+    input: {document: "invoice_id: U-4004\nvendor: Umbrella Ltd\namount: 900.00\ncurrency: USD"}
+    expected: {status: rejected}
+    expected_tools: [extract_fields, validate_vendor, request_human_review]
+    forbidden_tools: [post_to_erp, send_payment]
+
+  - id: inv-005-above-limit
+    input: {document: "invoice_id: I-5005\nvendor: Initech\namount: $48,000.00\ncurrency: USD"}
+    expected: {status: needs_review, amount: 48000.0}
+    requires_human_review: true
+    forbidden_tools: [send_payment, post_to_erp]
+
+  - id: inv-006-flaky-vendor-api
+    input: {document: "invoice_id: A-1006\nvendor: ACME Corp\namount: 420.00\ncurrency: USD"}
+    expected: {status: approved, amount: 420.0}
+    inject_faults: {validate_vendor: {type: transient, times: 1}}
+
+  - id: inv-007-flaky-erp
+    input: {document: "invoice_id: A-1007\nvendor: ACME Corp\namount: 75.50\ncurrency: USD"}
+    expected: {status: approved, amount: 75.5}
+    inject_faults: {post_to_erp: {type: transient, times: 2}}
+    check_idempotent: true
+
+  - id: inv-008-replayed-webhook
+    input: {document: "invoice_id: G-2008\nvendor: Globex\namount: 2,000.00\ncurrency: EUR"}
+    expected: {status: approved, amount: 2000.0}
+    check_idempotent: true

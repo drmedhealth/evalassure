@@ -1,0 +1,31 @@
+# USE CASE: Monthly production monitoring of a churn-prediction model.
+# SCENARIO: A price increase and a surge of new customers shift the data (data drift) and change
+#           how price affects churn (concept drift). Production labels for last month are available.
+# GOAL: Detect drift + performance decay, diagnose root cause, retrain on recent data and verify on a
+#       held-out production window.
+name: Churn model drift monitoring
+use_case: Post-deployment monitoring (MLOps)
+task: classification
+data:
+  generator: churn
+  params: {n: 6000, drift: 1.0}
+  split: {test_size: 0.2, val_size: 0.2, seed: 3}
+model:
+  builtin: logreg
+evaluators:
+  - name: classification
+    thresholds: {f1: 0.35}
+  - drift
+  - data_quality
+compliance: [nist_ai_rmf, iso_42001]
+autofix: true
+fixes:
+  retrain_recent: {recent_weight: 3.0}
+model_card:
+  owner: growth-ds@telco.example
+  version: 3.0.2
+  intended_use: Prioritise retention offers.
+  limitations: Consumer contracts only.
+  training_data: 2024 customer snapshot.
+  monitoring_plan: Monthly PSI and accuracy on labelled churners.
+  risk_assessment: Low-risk marketing use.

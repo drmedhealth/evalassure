@@ -1,0 +1,24 @@
+# USE CASE: Champion/challenger review - should the new model replace production?
+# SCENARIO: Challenger is a 25-nearest-neighbour model trained on the same data.
+# GOAL: Paired bootstrap CI + McNemar test on accuracy, deltas for F1/AUC/calibration, latency and size,
+#       fairness-regression check and a promotion decision.
+name: Champion vs challenger A/B
+use_case: Model promotion decision
+task: classification
+data:
+  generator: credit
+  params: {n: 6000, bias: 0.3}
+  split: {test_size: 0.3, val_size: 0.1, seed: 21}
+model:
+  builtin: logreg
+challenger:
+  builtin: knn
+  params: {k: 25}
+evaluators: [classification, comparison, fairness]
+compliance: [nist_ai_rmf]
+autofix: false
+model_card:
+  owner: credit-risk-ml@bank.example
+  intended_use: Loan scoring.
+  limitations: EU retail only.
+  monitoring_plan: Monthly.

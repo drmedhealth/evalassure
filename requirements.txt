@@ -1,0 +1,6 @@
+numpy>=1.24
+PyYAML>=6.0
+# optional
+# anthropic        # Claude provider
+# scikit-learn     # bring sklearn models
+# pytest           # tests

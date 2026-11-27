@@ -1,0 +1,34 @@
+# USE CASE: Emergency-department triage support (3 risk levels) - high-risk under the EU AI Act.
+# SCENARIO: An under-represented patient group has noisier labels; probabilities are used as risk
+#           scores, so calibration matters. Several governance items are missing from the model card.
+# GOAL: Multiclass performance, calibration, group performance gaps and a compliance gap analysis.
+name: Medical triage risk model
+use_case: ED triage decision support (clinician-in-the-loop)
+task: classification
+data:
+  generator: medical_triage
+  params: {n: 6000}
+  split: {test_size: 0.25, val_size: 0.2, seed: 9}
+model:
+  builtin: logreg
+  params: {epochs: 300}
+evaluators:
+  - data_quality
+  - name: classification
+    thresholds: {accuracy: 0.75, f1: 0.7, ece_max: 0.05}
+  - name: fairness
+    sensitive: [ethnicity, sex]
+    favorable_label: 2          # "high risk" -> gets urgent care; compare who is escalated
+  - robustness
+  - explainability
+compliance: [eu_ai_act, nist_ai_rmf, gdpr, iso_42001]
+autofix: true
+model_card:
+  owner: clinical-ai@hospital.example
+  version: 0.9.0
+  domain: healthcare
+  risk_level: high
+  intended_use: Suggest a triage level; a nurse makes the final decision.
+  training_data: 2021-2024 ED visits (synthetic here).
+  human_oversight: Triage nurse confirms or overrides every suggestion.
+  # intentionally missing: limitations, logging_enabled, dpia_completed, risk_assessment, monitoring_plan

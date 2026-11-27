@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "_macros.html" import verdict, icon %}
+{% block title %}Compare runs{% endblock %}
+
+{% macro side(letter, r) %}
+<a class="card tilt reveal vs-card vs-{{ letter|lower }}" href="/runs/{{ r.id }}">
+  <span class="vs-letter" aria-hidden="true">{{ letter }}</span>
+  <span class="vs-body">
+    <span class="eyebrow">Run {{ letter }}</span>
+    <strong class="vs-name">{{ r.name }}</strong>
+    <span class="row gap">{{ verdict(r.summary.verdict) }}<span class="muted small">{{ r.created_at|ts }}</span></span>
+  </span>
+</a>
+{% endmacro %}
+
+{% block content %}
+<nav class="crumbs" aria-label="Breadcrumb"><a href="/runs">Runs</a><span>compare</span></nav>
+<header class="page-head reveal">
+  <div>
+    <p class="eyebrow">Analysis</p>
+    <h1>Compare <span class="grad-text">runs</span></h1>
+    <p class="sub">What changed from A to B: scores after auto-fix where applied, and which findings were resolved or introduced.</p>
+  </div>
+</header>
+
+<div class="vs-grid">
+  {{ side('A', a) }}
+  <span class="vs-orb" aria-hidden="true">vs</span>
+  {{ side('B', b) }}
+</div>
+
+<section class="card reveal">
+  <h2>{{ icon('chart') }} Scores <span class="muted small">(after auto-fix where applied)</span></h2>
+  <div class="metric-rows">
+    {% for m in diff.metrics %}
+    {% set dir = 'up' if m.delta and m.delta > 0 else ('down' if m.delta and m.delta < 0 else 'flat') %}
+    <div class="metric-row">
+      <span class="metric-label">{{ m.label }}</span>
+      <span class="metric-val"><span class="tag">A</span> <span class="num"{% if m.a is not none %} data-count="{{ m.a }}"{% endif %}>{{ m.a if m.a is not none else '-' }}</span></span>
+      <span class="metric-arrow" aria-hidden="true">{{ icon('arrow-right') }}</span>
+      <span class="metric-val"><span class="tag">B</span> <strong class="num"{% if m.b is not none %} data-count="{{ m.b }}"{% endif %}>{{ m.b if m.b is not none else '-' }}</strong></span>
+      <span class="delta {{ dir }} {{ 'good' if dir == 'up' else 'bad' if dir == 'down' }}">
+        {% if m.delta is not none %}<span class="delta-arrow" aria-hidden="true">{{ '▲' if dir == 'up' else '▼' if dir == 'down' else '■' }}</span><span class="num">{{ '%+.1f'|format(m.delta) }}</span>{% else %}-{% endif %}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="grid3 diff-cols">
+  <section class="card reveal diff-col diff-resolved"><h3 class="good">{{ icon('check') }} Resolved in B ({{ diff.resolved|length }})</h3>
+    <ul class="code-list">{% for c, t in diff.resolved %}<li><code>{{ c }}</code><span class="small muted">{{ t }}</span></li>{% else %}<li class="muted">None</li>{% endfor %}</ul></section>
+  <section class="card reveal diff-col diff-new"><h3 class="bad">{{ icon('alert') }} New in B ({{ diff.new|length }})</h3>
+    <ul class="code-list">{% for c, t in diff.new %}<li><code>{{ c }}</code><span class="small muted">{{ t }}</span></li>{% else %}<li class="muted">None</li>{% endfor %}</ul></section>
+  <section class="card reveal diff-col diff-both"><h3>{{ icon('compare') }} In both ({{ diff.both|length }})</h3>
+    <ul class="code-list">{% for c, t in diff.both %}<li><code>{{ c }}</code><span class="small muted">{{ t }}</span></li>{% else %}<li class="muted">None</li>{% endfor %}</ul></section>
+</div>
+{% endblock %}

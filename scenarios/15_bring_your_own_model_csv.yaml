@@ -1,0 +1,27 @@
+# USE CASE: Test YOUR OWN model on YOUR OWN CSV - copy this file as a template.
+# The model comes from examples/custom_model.py (any object with predict / predict_proba; fit optional).
+# Swap in scikit-learn / XGBoost / PyTorch wrappers, or use `pickle: path/to/model.pkl`.
+name: Bring your own model (CSV)
+use_case: Employee attrition (sample CSV) with a custom Python model
+task: classification
+data:
+  path: examples/data/employee_attrition.csv
+  target: left_company
+  sensitive: [gender]
+  drop: [employee_id]
+  split: {test_size: 0.25, val_size: 0.2, seed: 7}
+model:
+  python: examples/custom_model.py:GradientBoostedStumps
+  params: {n_estimators: 60, learning_rate: 0.3}
+evaluators: [data_quality, classification, fairness, robustness, explainability]
+compliance: [eu_ai_act, gdpr, nist_ai_rmf]
+autofix: true
+model_card:
+  owner: people-analytics@corp.example
+  domain: employment
+  intended_use: Identify teams at risk of attrition (aggregate planning, not individual decisions).
+  limitations: Not for individual performance or termination decisions.
+  training_data: HRIS export (synthetic sample).
+  human_oversight: HR business partner reviews aggregated insights.
+  logging_enabled: true
+  dpia_completed: false

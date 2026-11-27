@@ -1,0 +1,35 @@
+# USE CASE: Real-time card-fraud detection.
+# SCENARIO: 1.5% fraud rate. The model reports ~98% accuracy but catches few frauds (accuracy paradox).
+# GOAL: Expose the paradox, then fix with class re-weighting + threshold tuning and verify recall/F1.
+name: Fraud detection imbalance
+use_case: Card-transaction fraud screening
+task: classification
+data:
+  generator: fraud
+  params: {n: 20000, fraud_rate: 0.015}
+  split: {test_size: 0.25, val_size: 0.2, seed: 1}
+model:
+  builtin: logreg
+evaluators:
+  - data_quality
+  - name: classification
+    thresholds: {accuracy: 0.9, f1: 0.5, recall: 0.6, roc_auc: 0.85}
+  - name: fairness
+    sensitive: [region]
+    favorable_label: 0          # being flagged as fraud is the UNfavourable outcome
+  - robustness
+  - explainability
+compliance: [nist_ai_rmf, iso_42001]
+autofix: true
+fixes:
+  threshold_tuning: {min_recall: 0.6}
+model_card:
+  owner: fraud-ml@bank.example
+  version: 5.1.0
+  intended_use: Flag suspicious card transactions for analyst review.
+  limitations: Card-present transactions only.
+  training_data: 12 months of labelled transactions (synthetic here).
+  risk_level: limited
+  human_oversight: Fraud analysts confirm every block.
+  monitoring_plan: Daily recall/precision on confirmed cases.
+  risk_assessment: docs/risk/fraud.md
